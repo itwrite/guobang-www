@@ -1,0 +1,209 @@
+nohup: ignoring input
+[E 181018 07:31:04 web:2746] Could not open static file '/var/www/bigdata/static/js'
+[I 181018 07:31:04 web:2063] 200 GET /person_cost (113.65.231.170) 9857.88ms
+[I 181018 07:39:51 autoreload:198] /var/www/bigdata/server2.py modified; restarting server
+[E 181018 07:39:56 web:1590] Uncaught exception GET /person_cost (113.65.231.170)
+    HTTPServerRequest(protocol='http', host='39.108.246.225:8899', method='GET', uri='/person_cost', version='HTTP/1.1', remote_ip='113.65.231.170', headers={'Pragma': 'no-cache', 'Cache-Control': 'no-cache', 'Accept-Encoding': 'gzip, deflate', 'Connection': 'keep-alive', 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8', 'Upgrade-Insecure-Requests': '1', 'Accept-Language': 'en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7', 'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36', 'Host': '39.108.246.225:8899'})
+    Traceback (most recent call last):
+      File "/usr/local/lib/python3.4/dist-packages/tornado/web.py", line 1509, in _execute
+        result = method(*self.path_args, **self.path_kwargs)
+      File "/var/www/bigdata/server2.py", line 287, in get
+        self.write(all_accvouch_df.head())
+      File "/usr/local/lib/python3.4/dist-packages/tornado/web.py", line 713, in write
+        raise TypeError(message)
+    TypeError: write() only accepts bytes, unicode, and dict objects
+[E 181018 07:39:56 web:2063] 500 GET /person_cost (113.65.231.170) 323.33ms
+[I 181018 07:40:19 autoreload:198] /var/www/bigdata/server2.py modified; restarting server
+[E 181018 07:40:32 web:2746] Could not open static file '/var/www/bigdata/static/js'
+[I 181018 07:40:32 web:2063] 200 GET /person_cost (113.65.231.170) 9921.68ms
+[I 181018 07:40:32 web:2063] 200 GET /static/js/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css?v=2f0baee0c8c1891f96df84d91e979241 (113.65.231.170) 1.08ms
+[I 181018 07:40:32 web:2063] 200 GET /static/js/jasmine/layout/css/jquery-layout.css?v=5b00a72e48f07a3b5fab2bbe79118684 (113.65.231.170) 0.96ms
+[I 181018 07:40:32 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-all.css?v=8d2799f78a6b6ce3db8217cc45b7a60c (113.65.231.170) 0.95ms
+[I 181018 07:40:32 web:2063] 200 GET /static/js/bootstrap-3.3.5-dist/css/bootstrap.min.css?v=5d5357cb3704e1f43a1f5bfed2aebf42 (113.65.231.170) 17.52ms
+[I 181018 07:40:32 web:2063] 200 GET /static/js/model-1.0.2.js?v=e52337e5d69cbdc15c8c3a310660e3bf (113.65.231.170) 1.21ms
+[I 181018 07:40:32 web:2063] 200 GET /static/js/require.js?v=eb0ef9ae5ed627559fa95dce2937ac06 (113.65.231.170) 12.42ms
+[I 181018 07:40:32 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-common.css (113.65.231.170) 1.24ms
+[I 181018 07:40:32 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-dialog.css (113.65.231.170) 0.92ms
+[I 181018 07:40:32 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-form.css (113.65.231.170) 1.49ms
+[I 181018 07:40:32 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-grid.css (113.65.231.170) 1.06ms
+[I 181018 07:40:33 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-layout.css (113.65.231.170) 1.06ms
+[I 181018 07:40:33 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-menu.css (113.65.231.170) 0.89ms
+[I 181018 07:40:33 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-tab.css (113.65.231.170) 1.37ms
+[I 181018 07:40:33 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-tree.css (113.65.231.170) 1.03ms
+[I 181018 07:40:35 web:2063] 200 GET /static/css/weui.css?v=c4731f3e5ce53798308e0b2a0e63b444 (113.65.231.170) 3226.80ms
+[I 181018 07:40:39 web:2063] 200 GET /static/js/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js (113.65.231.170) 1.12ms
+[I 181018 07:40:39 web:2063] 200 GET /static/js/jasmine/layout/jquery-layout.1.0.1.js (113.65.231.170) 0.63ms
+[I 181018 07:40:39 web:2063] 200 GET /static/js/jquery-1.11.1.min.js (113.65.231.170) 0.96ms
+[I 181018 07:40:39 web:2063] 200 GET /static/js/bootstrap-3.3.5-dist/fonts/glyphicons-halflings-regular.woff2 (113.65.231.170) 0.80ms
+[I 181018 07:40:45 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/js/ligerui.all.js (113.65.231.170) 5801.82ms
+[I 181018 07:40:46 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/panel/bar-bg.gif (113.65.231.170) 1.23ms
+[I 181018 07:40:46 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/icon/icon-load.gif (113.65.231.170) 0.77ms
+[I 181018 07:40:46 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/icon/icon-last.gif (113.65.231.170) 0.94ms
+[I 181018 07:40:46 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/icon/icon-next.gif (113.65.231.170) 0.76ms
+[I 181018 07:40:46 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/icon/icon-prev.gif (113.65.231.170) 0.96ms
+[I 181018 07:40:46 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/icon/icon-first.gif (113.65.231.170) 0.86ms
+[I 181018 07:40:46 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/grid/header-bg.gif (113.65.231.170) 0.88ms
+[I 181018 07:40:46 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/grid/popup-line.gif (113.65.231.170) 0.84ms
+[I 181018 07:40:46 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/common/loading.gif (113.65.231.170) 0.71ms
+[I 181018 07:40:46 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/layout/panel-header2.gif (113.65.231.170) 0.92ms
+[E 181018 08:34:20 web:2746] Could not open static file '/var/www/bigdata/static/js'
+[I 181018 08:34:20 web:2063] 200 GET /person_cost (116.6.132.90) 9721.24ms
+[E 181018 15:26:32 web:2746] Could not open static file '/var/www/bigdata/static/js'
+[I 181018 15:26:32 web:2063] 200 GET /person_cost (116.6.132.90) 11126.03ms
+[E 181018 15:26:44 web:2746] Could not open static file '/var/www/bigdata/static/js'
+[I 181018 15:26:44 web:2063] 200 GET /person_cost (116.6.132.90) 11252.53ms
+[E 181018 15:26:54 web:2746] Could not open static file '/var/www/bigdata/static/js'
+[I 181018 15:26:54 web:2063] 200 GET /person_cost (116.6.132.90) 10106.53ms
+[W 181018 15:26:54 web:2063] 404 GET /favicon.ico (116.6.132.90) 2.96ms
+[E 181018 15:27:13 web:2746] Could not open static file '/var/www/bigdata/static/js'
+[I 181018 15:27:13 web:2063] 304 GET /person_cost (116.6.132.90) 10532.15ms
+/usr/local/lib/python3.4/dist-packages/pandas/core/computation/check.py:17: UserWarning: The installed version of numexpr 2.2.2 is not supported in pandas and will be not be used
+The minimum supported version is 2.4.6
+
+  ver=ver, min_ver=_MIN_NUMEXPR_VERSION), UserWarning)
+[E 181018 15:27:14 web:2746] Could not open static file '/var/www/bigdata/static/js'
+[I 181018 15:27:14 web:2063] 200 GET / (116.6.132.90) 1122.67ms
+[E 181018 15:27:15 web:2746] Could not open static file '/var/www/bigdata/static/js'
+[I 181018 15:27:15 web:2063] 200 GET / (116.6.132.90) 916.78ms
+[E 181018 21:38:26 web:2746] Could not open static file '/var/www/bigdata/static/js'
+[I 181018 21:38:26 web:2063] 200 GET /person_cost (112.96.173.229) 10582.34ms
+[I 181018 21:38:27 web:2063] 200 GET /static/js/bootstrap-3.3.5-dist/css/bootstrap.min.css?v=5d5357cb3704e1f43a1f5bfed2aebf42 (112.96.173.229) 160.89ms
+[I 181018 21:38:27 web:2063] 200 GET /static/js/jasmine/layout/css/jquery-layout.css?v=5b00a72e48f07a3b5fab2bbe79118684 (112.96.173.229) 1.59ms
+[I 181018 21:38:27 web:2063] 200 GET /static/js/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css?v=2f0baee0c8c1891f96df84d91e979241 (112.96.173.229) 1.16ms
+[I 181018 21:38:27 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-all.css?v=8d2799f78a6b6ce3db8217cc45b7a60c (112.96.173.229) 1.11ms
+[I 181018 21:38:28 web:2063] 200 GET /static/js/model-1.0.2.js?v=e52337e5d69cbdc15c8c3a310660e3bf (112.96.173.229) 1.47ms
+[I 181018 21:38:28 web:2063] 200 GET /static/js/require.js?v=eb0ef9ae5ed627559fa95dce2937ac06 (112.96.173.229) 196.17ms
+[I 181018 21:38:28 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-common.css (112.96.173.229) 1.14ms
+[I 181018 21:38:28 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-dialog.css (112.96.173.229) 1.34ms
+[I 181018 21:38:28 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-form.css (112.96.173.229) 1.41ms
+[I 181018 21:38:28 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-grid.css (112.96.173.229) 1.12ms
+[I 181018 21:38:29 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-layout.css (112.96.173.229) 1.08ms
+[I 181018 21:38:29 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-menu.css (112.96.173.229) 1.01ms
+[I 181018 21:38:29 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-tab.css (112.96.173.229) 1.39ms
+[I 181018 21:38:29 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-tree.css (112.96.173.229) 1.00ms
+[I 181018 21:38:30 web:2063] 200 GET /static/css/weui.css?v=c4731f3e5ce53798308e0b2a0e63b444 (112.96.173.229) 2811.60ms
+[I 181018 21:38:34 web:2063] 200 GET /static/js/jasmine/layout/jquery-layout.1.0.1.js (112.96.173.229) 1.39ms
+[I 181018 21:38:34 web:2063] 200 GET /static/js/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js (112.96.173.229) 1.04ms
+[I 181018 21:38:34 web:2063] 200 GET /static/js/jquery-1.11.1.min.js (112.96.173.229) 1.39ms
+[I 181018 21:38:35 web:2063] 200 GET /static/js/bootstrap-3.3.5-dist/fonts/glyphicons-halflings-regular.woff2 (112.96.173.229) 0.90ms
+[I 181018 21:38:39 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/js/ligerui.all.js (112.96.173.229) 4571.73ms
+[I 181018 21:38:40 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/panel/bar-bg.gif (112.96.173.229) 1.00ms
+[I 181018 21:38:40 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/icon/icon-load.gif (112.96.173.229) 1.03ms
+[I 181018 21:38:40 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/icon/icon-last.gif (112.96.173.229) 0.69ms
+[I 181018 21:38:40 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/icon/icon-next.gif (112.96.173.229) 0.58ms
+[I 181018 21:38:40 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/icon/icon-prev.gif (112.96.173.229) 0.58ms
+[I 181018 21:38:40 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/icon/icon-first.gif (112.96.173.229) 0.76ms
+[I 181018 21:38:40 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/grid/header-bg.gif (112.96.173.229) 0.98ms
+[I 181018 21:38:40 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/common/loading.gif (112.96.173.229) 0.65ms
+[I 181018 21:38:40 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/grid/popup-line.gif (112.96.173.229) 0.65ms
+[I 181018 21:38:40 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/layout/panel-header2.gif (112.96.173.229) 0.73ms
+[E 181018 21:54:22 web:2746] Could not open static file '/var/www/bigdata/static/js'
+[I 181018 21:54:22 web:2063] 200 GET /person_cost (112.96.173.229) 9946.00ms
+[I 181018 21:54:22 web:2063] 200 GET /static/js/jasmine/layout/css/jquery-layout.css?v=5b00a72e48f07a3b5fab2bbe79118684 (112.96.173.229) 0.78ms
+[I 181018 21:54:22 web:2063] 200 GET /static/js/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css?v=2f0baee0c8c1891f96df84d91e979241 (112.96.173.229) 0.83ms
+[I 181018 21:54:22 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-all.css?v=8d2799f78a6b6ce3db8217cc45b7a60c (112.96.173.229) 0.73ms
+[I 181018 21:54:22 web:2063] 200 GET /static/js/model-1.0.2.js?v=e52337e5d69cbdc15c8c3a310660e3bf (112.96.173.229) 1.26ms
+[I 181018 21:54:22 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-common.css (112.96.173.229) 0.95ms
+[I 181018 21:54:22 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-dialog.css (112.96.173.229) 1.03ms
+[I 181018 21:54:22 web:2063] 200 GET /static/js/bootstrap-3.3.5-dist/css/bootstrap.min.css?v=5d5357cb3704e1f43a1f5bfed2aebf42 (112.96.173.229) 390.90ms
+[I 181018 21:54:23 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-form.css (112.96.173.229) 1.12ms
+[I 181018 21:54:23 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-grid.css (112.96.173.229) 1.04ms
+[I 181018 21:54:23 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-layout.css (112.96.173.229) 1.08ms
+[I 181018 21:54:23 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-menu.css (112.96.173.229) 1.01ms
+[I 181018 21:54:23 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-tab.css (112.96.173.229) 1.00ms
+[I 181018 21:54:23 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-tree.css (112.96.173.229) 0.93ms
+[I 181018 21:54:24 web:2063] 200 GET /static/js/require.js?v=eb0ef9ae5ed627559fa95dce2937ac06 (112.96.173.229) 1519.64ms
+[I 181018 21:54:26 web:2063] 200 GET /static/css/weui.css?v=c4731f3e5ce53798308e0b2a0e63b444 (112.96.173.229) 3631.37ms
+[I 181018 21:54:27 web:2063] 200 GET /static/js/jasmine/layout/jquery-layout.1.0.1.js (112.96.173.229) 1.37ms
+[I 181018 21:54:27 web:2063] 200 GET /static/js/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js (112.96.173.229) 1.02ms
+[I 181018 21:54:27 web:2063] 200 GET /static/js/jquery-1.11.1.min.js (112.96.173.229) 383.07ms
+[I 181018 21:54:27 web:2063] 200 GET /static/js/bootstrap-3.3.5-dist/fonts/glyphicons-halflings-regular.woff2 (112.96.173.229) 1.07ms
+[I 181018 21:54:33 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/js/ligerui.all.js (112.96.173.229) 5451.98ms
+[I 181018 21:54:34 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/panel/bar-bg.gif (112.96.173.229) 1.11ms
+[I 181018 21:54:34 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/icon/icon-load.gif (112.96.173.229) 0.64ms
+[I 181018 21:54:34 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/icon/icon-last.gif (112.96.173.229) 0.78ms
+[I 181018 21:54:34 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/icon/icon-next.gif (112.96.173.229) 0.63ms
+[I 181018 21:54:34 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/icon/icon-prev.gif (112.96.173.229) 0.61ms
+[I 181018 21:54:34 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/icon/icon-first.gif (112.96.173.229) 0.60ms
+[I 181018 21:54:34 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/grid/header-bg.gif (112.96.173.229) 1.01ms
+[I 181018 21:54:34 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/grid/popup-line.gif (112.96.173.229) 1.00ms
+[I 181018 21:54:34 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/common/loading.gif (112.96.173.229) 0.67ms
+[I 181018 21:54:34 web:2063] 200 GET /static/js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/images/layout/panel-header2.gif (112.96.173.229) 0.65ms
+[E 181019 08:29:38 web:1590] Uncaught exception GET /person_cost (116.6.132.90)
+    HTTPServerRequest(protocol='http', host='39.108.246.225:8899', method='GET', uri='/person_cost', version='HTTP/1.1', remote_ip='116.6.132.90', headers={'Accept': '*/*', 'User-Agent': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 2.0.50727)', 'Host': '39.108.246.225:8899', 'Connection': 'Keep-Alive', 'Cache-Control': 'no-cache'})
+    Traceback (most recent call last):
+      File "/usr/local/lib/python3.4/dist-packages/pymysql/connections.py", line 1039, in _write_bytes
+        self._sock.sendall(data)
+    BrokenPipeError: [Errno 32] Broken pipe
+    
+    During handling of the above exception, another exception occurred:
+    
+    Traceback (most recent call last):
+      File "/usr/local/lib/python3.4/dist-packages/sqlalchemy/engine/base.py", line 1182, in _execute_context
+        context)
+      File "/usr/local/lib/python3.4/dist-packages/sqlalchemy/engine/default.py", line 470, in do_execute
+        cursor.execute(statement, parameters)
+      File "/usr/local/lib/python3.4/dist-packages/pymysql/cursors.py", line 166, in execute
+        result = self._query(query)
+      File "/usr/local/lib/python3.4/dist-packages/pymysql/cursors.py", line 322, in _query
+        conn.query(q)
+      File "/usr/local/lib/python3.4/dist-packages/pymysql/connections.py", line 855, in query
+        self._execute_command(COMMAND.COM_QUERY, sql)
+      File "/usr/local/lib/python3.4/dist-packages/pymysql/connections.py", line 1092, in _execute_command
+        self._write_bytes(packet)
+      File "/usr/local/lib/python3.4/dist-packages/pymysql/connections.py", line 1044, in _write_bytes
+        "MySQL server has gone away (%r)" % (e,))
+    pymysql.err.OperationalError: (2006, "MySQL server has gone away (BrokenPipeError(32, 'Broken pipe'))")
+    
+    The above exception was the direct cause of the following exception:
+    
+    Traceback (most recent call last):
+      File "/usr/local/lib/python3.4/dist-packages/tornado/web.py", line 1509, in _execute
+        result = method(*self.path_args, **self.path_kwargs)
+      File "/var/www/bigdata/server2.py", line 277, in get
+        all_department_df = DepartmentCostHandler.get_all_departments_df()
+      File "/var/www/bigdata/server2.py", line 213, in get_all_departments_df
+        return pd.read_sql_query(sql, db_local.conn)
+      File "/usr/local/lib/python3.4/dist-packages/pandas/io/sql.py", line 332, in read_sql_query
+        parse_dates=parse_dates, chunksize=chunksize)
+      File "/usr/local/lib/python3.4/dist-packages/pandas/io/sql.py", line 1092, in read_query
+        result = self.execute(*args)
+      File "/usr/local/lib/python3.4/dist-packages/pandas/io/sql.py", line 983, in execute
+        return self.connectable.execute(*args, **kwargs)
+      File "/usr/local/lib/python3.4/dist-packages/sqlalchemy/engine/base.py", line 2064, in execute
+        return connection.execute(statement, *multiparams, **params)
+      File "/usr/local/lib/python3.4/dist-packages/sqlalchemy/engine/base.py", line 939, in execute
+        return self._execute_text(object, multiparams, params)
+      File "/usr/local/lib/python3.4/dist-packages/sqlalchemy/engine/base.py", line 1097, in _execute_text
+        statement, parameters
+      File "/usr/local/lib/python3.4/dist-packages/sqlalchemy/engine/base.py", line 1189, in _execute_context
+        context)
+      File "/usr/local/lib/python3.4/dist-packages/sqlalchemy/engine/base.py", line 1402, in _handle_dbapi_exception
+        exc_info
+      File "/usr/local/lib/python3.4/dist-packages/sqlalchemy/util/compat.py", line 203, in raise_from_cause
+        reraise(type(exception), exception, tb=exc_tb, cause=cause)
+      File "/usr/local/lib/python3.4/dist-packages/sqlalchemy/util/compat.py", line 186, in reraise
+        raise value.with_traceback(tb)
+      File "/usr/local/lib/python3.4/dist-packages/sqlalchemy/engine/base.py", line 1182, in _execute_context
+        context)
+      File "/usr/local/lib/python3.4/dist-packages/sqlalchemy/engine/default.py", line 470, in do_execute
+        cursor.execute(statement, parameters)
+      File "/usr/local/lib/python3.4/dist-packages/pymysql/cursors.py", line 166, in execute
+        result = self._query(query)
+      File "/usr/local/lib/python3.4/dist-packages/pymysql/cursors.py", line 322, in _query
+        conn.query(q)
+      File "/usr/local/lib/python3.4/dist-packages/pymysql/connections.py", line 855, in query
+        self._execute_command(COMMAND.COM_QUERY, sql)
+      File "/usr/local/lib/python3.4/dist-packages/pymysql/connections.py", line 1092, in _execute_command
+        self._write_bytes(packet)
+      File "/usr/local/lib/python3.4/dist-packages/pymysql/connections.py", line 1044, in _write_bytes
+        "MySQL server has gone away (%r)" % (e,))
+    sqlalchemy.exc.OperationalError: (pymysql.err.OperationalError) (2006, "MySQL server has gone away (BrokenPipeError(32, 'Broken pipe'))") [SQL: ' select * from fin_department']
+[E 181019 08:29:38 web:2063] 500 GET /person_cost (116.6.132.90) 5.05ms
+[E 181019 20:31:33 web:2746] Could not open static file '/var/www/bigdata/static/js'
+[I 181019 20:31:33 web:2063] 200 GET / (52.12.15.143) 1074.60ms
+[I 181020 20:51:40 autoreload:198] /var/www/bigdata/server2.py modified; restarting server
+  File "/var/www/bigdata/server2.py", line 233
+    main_sql += " FROM fin_g
+                           ^
+SyntaxError: EOL while scanning string literal

@@ -1,0 +1,133 @@
+{% extends "layout/base2.html" %}
+
+{% block body %}
+<link rel="stylesheet" href="{{ static_url('js/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css') }}"
+      type="text/css">
+
+<div id="app">
+    <form action="/person_cost" method="get">
+        <div class="row">
+            <div class="col-sm-2">
+                <div class="input-group">
+                    <span class="input-group-addon">部门</span>
+                    <select name="cDepCode" title="" class="form-control">
+                        <option value="">全部</option>
+                        {% for i,row in all_department_df.iterrows() %}
+                        {% if row['cDepCode']== _depCode%}
+                        <option value="{{ row['cDepCode']}}" selected="selected">{{row['cDepName']}}</option>
+                        {% else %}
+                        <option value="{{ row['cDepCode']}}">{{row['cDepName']}}</option>
+                        {% end%}
+                        {% end %}
+                    </select>
+                </div>
+
+            </div>
+            <div class="col-sm-3">
+                <div id="startDate" style="width: 96%;" class="input-group date col-md-5" data-link-field="dtp_input1"
+                     data-link-format="yyyy-mm">
+                    <span class="input-group-addon">开始月份</span>
+                    <input class="form-control" size="16" type="text" value="{{ _start_date }}" >
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                </div>
+                <input type="hidden" id="dtp_input1" name="startDate" value="{{ _start_date }}"/><br/>
+            </div>
+            <div class="col-sm-3">
+                <div id="endDate" style="width: 96%;" class="input-group date col-md-5" data-link-field="dtp_input2"
+                     data-link-format="yyyy-mm">
+                    <span class="input-group-addon">结束月份</span>
+                    <input class="form-control" size="16" type="text" value="{{ _end_date }}" >
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                </div>
+                <input type="hidden" id="dtp_input2" name="endDate" value="{{ _end_date }}"/><br/>
+            </div>
+            <div class="col-sm-2">
+                <button type="submit" class="btn btn-primary btn-mini">搜索</button>
+            </div>
+        </div>
+
+    </form>
+    <div id="maingrid" class="l-panel l-frozen l-empty" ligeruiid="maingrid" style="width: 100%;">
+
+    </div>
+
+    <div id="grid">
+
+    </div>
+</div>
+
+
+<script>
+    $(function(){
+        $("#startDate").datetimepicker({
+            format: "yyyy-mm",
+            startView: 3,
+            minView: 3,
+            language: 'zh-CN',
+            autoclose: true,
+            // endDate: new Date(),
+            initialDate: "{{_start_date}}"
+        }).on('changeDate', function (ev) {
+            console.log(ev.date.format('yyyy-mm'));
+            $("#dtp_input1").val(ev.date.format('yyyy-mm'));
+            //$(ev.target).closest('form').submit();
+        });
+
+        $("#endDate").datetimepicker({
+            format: "yyyy-mm",
+            startView: 3,
+            minView: 3,
+            language: 'zh-CN',
+            autoclose: true,
+            // endDate: new Date(),
+            initialDate: "{{_end_date}}"
+        }).on('changeDate', function (ev) {
+            //
+            $("#dtp_input2").val(ev.date.format('yyyy-mm'));
+            //$(ev.target).closest('form').submit();
+        });
+
+
+       $("#grid").shieldGrid({
+            dataSource: {
+                data: {% raw listData.to_json(orient='records') %}
+            },
+            paging: {
+                pageSize: 20,
+                pageLinksCount: 10
+            },
+            columns: [
+                { field: "科目", width: "70px", title: "科目", locked: true },
+                {% for col_name in listData.columns %}
+                    {% if col_name != "科目" %}
+                        { field: "{{ col_name }}", width: "130px", title: '{% raw col_name.replace('____(','(').replace(')____',')') %}' },
+                    {% end %}
+                {% end %}
+            ],
+            toolbar: [
+                {
+                    buttons: [
+                        {
+                            commandName: "excel",
+                            caption: '<span class="sui-sprite sui-grid-icon-export-excel"></span> <span class="sui-grid-button-text">Export to Excel</span>'
+                        }
+                    ]
+                }
+            ],
+            exportOptions: {
+                proxy: "/filesaver/save",
+                excel: {
+                    fileName: "shieldui-export",
+                    author: "John Smith",
+                    dataSource: {
+                        data: {% raw listData.to_json(orient='records') %}
+                    },
+                    readDataSource: true
+                }
+            }
+        });
+    });
+
+</script>
+{% end %}
+

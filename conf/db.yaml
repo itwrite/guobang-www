@@ -1,0 +1,57 @@
+SQL_LUBANG:
+    type : sql
+    ip : rds1t9295q6u90il4901.mysql.rds.aliyuncs.com
+    port : 3306
+    user : ice_bi_analysis
+    pwd : ice_bi_analysis2018
+    db : ice_produce_cn
+    table :
+        paycheck : arap
+        contract : ice_contract_leasing
+        fault : ice_device_fault_info
+        device : ice_device_info
+        repair_detail : ice_service_parts
+        repair_main : ice_service_record
+        battery : _status_bms_status
+        operation : _status_mcb_status
+
+SQL_U8:
+    type : mssql
+    ip : 116.6.132.90
+    port : 1433
+    user : icereader
+    pwd : ice789
+    db : UFDATA_198_2011
+
+SQL_TEST:
+    type : sql
+    ip : 39.108.246.225
+    port : 3306
+    user : lego
+    pwd : bk93dSuVUgg6hf3tap7A9UzG
+    db : guobang
+    table : 
+        device : guobang_new_device2
+        repair_detail : guobang_fin_repair_detail
+        repair_result : guobang_fin_repair_result
+        repair_first : guobang_fin_first_repair
+        usage : guobang_fin_usage_data
+        charge : guobang_fin_charge_data
+        fin_gl_accvouch : fin_gl_accvouch
+        fin_department: fin_department
+        fin_code : fin_code
+        fin_person : fin_person
+        
+SQL_BIG_DATA:
+    type: sql
+    ip: 116.6.132.90
+    port: 3306
+    user: root
+    pwd: Ice@mysql666666
+    db: u8_big_data
+    table:
+        fin_gl_accvouch: fin_gl_accvouch
+        fin_department: fin_department
+        fin_code: fin_code
+        fin_person: fin_person
+

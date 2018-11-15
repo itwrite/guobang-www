@@ -1,0 +1,197 @@
+{% extends "layout/base.html" %}
+
+{% block body %}
+<link rel="stylesheet" href="{{ static_url('js/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css') }}"
+      type="text/css">
+
+<style>
+   .l-grid-header-inner th{
+        position: relative;
+        min-height: 46px;
+        height: 46px;
+    }
+    form .row{
+        padding-bottom: 5px;
+    }
+</style>
+
+<div id="app" style="width: 98%;">
+    <form action="/ice_rent_cost" method="get">
+        <div class="row">
+             <div class="col-sm-3" style="width: 280px;">
+                <div id="startDate" style="width: 96%;" class="input-group date col-md-5" data-link-field="dtp_input1"
+                     data-link-format="yyyy-mm-dd">
+                    <span class="input-group-addon">启租时间</span>
+                    <input class="form-control" size="16" type="text" name="startDate"  value="{{ _start_date }}" >
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                </div>
+            </div>
+            <div class="col-sm-1" style="width: 20px;padding-left: 0;">~</div>
+            <div class="col-sm-3" style="width: 200px;padding-left: 0;">
+                <div id="endDate" style="width: 96%;" class="input-group date col-md-5" data-link-field="dtp_input2"
+                     data-link-format="yyyy-mm-dd">
+                    <input class="form-control" size="16" type="text" name="endDate" value="{{ _end_date }}" >
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3" style="width: 280px;">
+               <div id="rentDate" style="width: 96%;" class="input-group date col-md-5">
+                    <span class="input-group-addon">收款时间</span>
+                    <input class="form-control" size="16" type="text" name="rentDate" value="" >
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                </div>
+            </div>
+            <div class="col-sm-3" style="width: 280px;">
+               <div id="invoiceDate" style="width: 96%;" class="input-group date col-md-5">
+                    <span class="input-group-addon">开票时间</span>
+                    <input class="form-control" size="16" type="text" name="invoiceDate" value="" >
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3" style="width: 280px;">
+               <div id="signDate" style="width: 96%;" class="input-group date col-md-5">
+                    <span class="input-group-addon">签订日期</span>
+                    <input class="form-control" size="16" type="text" name="signDate" value="" >
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                </div>
+            </div>
+            <div class="col-sm-3" style="width: 280px;">
+               <div style="width: 96%;" class="input-group date col-md-5">
+                    <input class="form-control" size="16" type="text" name="keywords" value="" placeholder="合同号/机身号" >
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <button type="submit" class="btn btn-primary btn-mini">搜索</button>
+            </div>
+        </div>
+
+    </form>
+
+      <div class="my-buttons">
+        <button type="button" class="download btn btn-info" disabled>下载</button>
+    </div>
+    <div id="grid">
+
+    </div>
+    <script>
+        var jsonData = {}
+    jsonData.Rows = {% raw listData.to_json(orient='records') %};
+
+        var fixed_columns = ['签订日期','公司','合同编号','启租时间','机身号'];
+    var option = {
+                columns: [],
+                width: '100%',
+                pkName: 'id',
+                pageSizeOptions: [5, 10, 15, 20],
+                height: '100%',
+                usePager:false,
+                data:jsonData,
+        fixedCellHeight: false,
+        rownumbersColWidth:28,
+        rownumbers:true,
+        onAfterShowData:function () {
+            $(".download").removeAttr('disabled');
+        }
+            };
+    for(var k in fixed_columns){
+        var name = fixed_columns[k];
+        var obj = {display: name, name:name , width: 150,isSort:false}
+        obj['frozen'] = true;
+        option.columns.push(obj)
+    }
+    for(var k in jsonData.Rows[0]){
+        var obj = {display: k, name:k , width: 150,isSort:false}
+        if(fixed_columns.indexOf(k)<0){
+            option.columns.push(obj)
+        }
+    }
+        require(['jquery','ligerui'], function ($) {
+
+            //v1.02以上支持直接返回grid的管理对象
+            $grid = $("#grid").ligerGrid(option);
+
+            $(".download").click(function () {
+                require(['xlsx'], function (XLSX) {
+                    var $grid1_table = $(".l-grid1 table.l-grid-body-table").clone();
+                    var $grid1_header = $(".l-grid1 table.l-grid-header-table").clone();
+
+                    var $grid2_table = $(".l-grid2 table.l-grid-body-table").clone();
+                    var $grid2_header = $(".l-grid2 table.l-grid-header-table").clone();
+
+
+                    //取第一行，放到表2头部
+                    var $gh1_tds = $grid1_header.find("tr").eq(0).find(">td");
+                    console.log($gh1_tds)
+                    for(var i=$gh1_tds.length-1;i>-1;i--){
+                        var $td = $gh1_tds.eq(i).clone();
+                        console.log("td",$td);
+                        $grid2_header.find('tr').eq(0).prepend($td)
+                    }
+                    console.log('$grid2_header',$grid2_header[0])
+                    $grid2_table.prepend($('<thead></thead>').append($grid2_header.find('tr').eq(0)));
+
+                    $grid1_table.find("tr").each(function () {
+                        var $tr = $(this);
+                        var id1 = $tr.attr('id');
+                        var id2 = String(id1).replace('|1|','|2|');
+                        console.log("id2",id2);
+                        var $tds = $tr.find(">td");
+                        for(var i=$tds.length-1;i>-1;i--){
+                            var $td = $tds.eq(i).clone();
+                            $grid2_table.find("tbody>tr[id='"+id2+"']").prepend($td)
+                        }
+                    });
+
+                    console.log($grid2_table[0]);
+
+                    var wb = XLSX.utils.table_to_book($grid2_table[0], {sheet:"Sheet(1)"});
+
+                    /* generate download */
+                    XLSX.writeFile(wb, "租机成本.xlsx");
+
+                });
+            });
+        });
+
+
+    </script>
+</div>
+
+
+<script>
+    require(['datepicker'], function () {
+        $("#startDate").datetimepicker({
+            format: "yyyy-mm-dd",
+            startView: 2,
+            minView: 2,
+            language: 'zh-CN',
+            autoclose: true,
+            // endDate: new Date(),
+            // initialDate: "{{_start_date}}"
+        });
+
+        $("#endDate").datetimepicker({
+            format: "yyyy-mm-dd",
+            startView: 2,
+            minView: 2,
+            language: 'zh-CN',
+            autoclose: true,
+            // endDate: new Date(),
+            // initialDate: "{{_end_date}}"
+        });
+
+        $("#rentDate,#ivoiceData,#signDate").datetimepicker({
+            format: "yyyy-mm-dd",
+            startView: 2,
+            minView: 2,
+            language: 'zh-CN',
+            autoclose: true,
+        });
+    });
+</script>
+{% end %}
+

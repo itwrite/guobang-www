@@ -1,0 +1,40 @@
+nohup: ignoring input
+[E 180705 22:11:23 web:2746] Could not open static file '/var/www/bigdata/static/js'
+[I 180705 22:11:23 web:2063] 200 GET /capitalized_cost_by_class (116.23.231.30) 11939.39ms
+[I 180705 22:11:24 web:2063] 200 GET /static/js/bootstrap-3.3.5-dist/css/bootstrap.min.css?v=5d5357cb3704e1f43a1f5bfed2aebf42 (116.23.231.30) 1152.45ms
+[I 180705 22:11:26 web:2063] 200 GET /static/js/jasmine/layout/css/jquery-layout.css?v=333fa2dac5f7e83f4590fcfcd5e4fe9a (116.23.231.30) 1.03ms
+[I 180705 22:11:26 web:2063] 200 GET /static/js/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css?v=2f0baee0c8c1891f96df84d91e979241 (116.23.231.30) 0.71ms
+[I 180705 22:11:26 web:2063] 200 GET /static/js/dataframe-1.0.1.js?v=85093b97208a4cd1a9ff5c9f755275ed (116.23.231.30) 0.70ms
+[I 180705 22:11:26 web:2063] 200 GET /static/js/tableview-1.0.1.js?v=1133da2ff6f457d919d20e8abaf48726 (116.23.231.30) 1.15ms
+[I 180705 22:11:28 web:2063] 200 GET /static/js/require.js?v=eb0ef9ae5ed627559fa95dce2937ac06 (116.23.231.30) 1806.68ms
+[I 180705 22:11:29 web:2063] 200 GET /static/css/weui.css?v=c4731f3e5ce53798308e0b2a0e63b444 (116.23.231.30) 4210.99ms
+[I 180705 22:12:08 web:2063] 200 GET /static/js/jasmine/layout/jquery-layout.1.0.1.js (116.23.231.30) 0.96ms
+[I 180705 22:12:08 web:2063] 200 GET /static/js/jquery-1.11.1.min.js (116.23.231.30) 1.25ms
+[E 180705 22:12:54 web:2746] Could not open static file '/var/www/bigdata/static/js'
+[I 180705 22:12:54 web:2063] 200 GET /person_cost (116.23.231.30) 14915.96ms
+[I 180705 22:12:54 web:2063] 200 GET /static/js/bootstrap-3.3.5-dist/fonts/glyphicons-halflings-regular.woff2 (116.23.231.30) 0.84ms
+[I 180705 22:12:54 web:2063] 200 GET /static/js/jasmine/layout/css/jquery-layout.css?v=333fa2dac5f7e83f4590fcfcd5e4fe9a (116.23.231.30) 0.89ms
+[I 180705 22:12:54 web:2063] 200 GET /static/js/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css?v=2f0baee0c8c1891f96df84d91e979241 (116.23.231.30) 0.75ms
+[I 180705 22:12:56 web:2063] 200 GET /static/js/require.js?v=eb0ef9ae5ed627559fa95dce2937ac06 (116.23.231.30) 1478.02ms
+[I 180705 22:12:57 web:2063] 200 GET /static/css/weui.css?v=c4731f3e5ce53798308e0b2a0e63b444 (116.23.231.30) 2703.75ms
+[I 180705 22:12:57 web:2063] 200 GET /static/js/bootstrap-3.3.5-dist/css/bootstrap.min.css?v=5d5357cb3704e1f43a1f5bfed2aebf42 (116.23.231.30) 3094.68ms
+[I 180705 22:12:59 web:2063] 200 GET /static/js/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js (116.23.231.30) 1.05ms
+[I 180705 22:12:59 web:2063] 200 GET /static/js/jasmine/layout/jquery-layout.1.0.1.js (116.23.231.30) 1.01ms
+[I 180705 22:13:00 web:2063] 200 GET /static/js/jquery-1.11.1.min.js (116.23.231.30) 47.35ms
+[I 180705 22:13:00 web:2063] 200 GET /static/js/bootstrap-3.3.5-dist/fonts/glyphicons-halflings-regular.woff2 (116.23.231.30) 1.05ms
+[E 180705 22:15:46 web:2746] Could not open static file '/var/www/bigdata/static/js'
+[I 180705 22:15:47 web:2063] 304 GET /person_cost (116.23.231.30) 13167.99ms
+[E 180705 22:16:48 web:2746] Could not open static file '/var/www/bigdata/static/js'
+[I 180705 22:16:48 web:2063] 200 GET /person_cost (116.23.231.30) 12440.27ms
+[E 180705 22:18:23 web:2746] Could not open static file '/var/www/bigdata/static/js'
+[I 180705 22:18:23 web:2063] 200 GET /person_cost (116.23.231.30) 13063.26ms
+[E 180705 22:19:13 web:2746] Could not open static file '/var/www/bigdata/static/js'
+[I 180705 22:19:13 web:2063] 200 GET / (116.23.231.30) 15667.10ms
+/usr/local/lib/python3.4/dist-packages/pandas/core/computation/check.py:17: UserWarning: The installed version of numexpr 2.2.2 is not supported in pandas and will be not be used
+The minimum supported version is 2.4.6
+
+  ver=ver, min_ver=_MIN_NUMEXPR_VERSION), UserWarning)
+[E 180706 10:44:41 web:2746] Could not open static file '/var/www/bigdata/static/js'
+[I 180706 10:44:41 web:2063] 200 GET /ice_rent_cost (116.23.231.30) 1885.08ms
+[I 180706 10:44:42 web:2063] 304 GET /static/js/jasmine/layout/jquery-layout.1.0.1.js (116.23.231.30) 1.08ms
+[I 180706 10:51:38 autoreload:198] /var/www/bigdata/index.py modified; restarting server

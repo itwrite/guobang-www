@@ -1,0 +1,181 @@
+{% extends "layout/base.html" %}
+
+{% block body %}
+
+<style>
+      table[bordered] tr td[rel='total']{
+            font-weight: 500;
+            color: orangered;
+          background: cornsilk;
+        }
+     .table-bordered tbody tr:hover {
+            background-color: transparent;
+        }
+    .selections select{
+        border: 1px solid #ddd;
+        height: 200px;
+        width: 200px;
+    }
+
+    /*.l-grid-header-table thead tr:last-child>th:first-child, .l-grid-body-table tbody tr:last-child> td:first-child{*/
+        /*border-bottom:0;*/
+    /*}*/
+
+</style>
+<!--<script src="{{ static_url('js/dataframe-1.0.1.js') }}"></script>-->
+<!--<script src="{{ static_url('js/tableview-1.0.1.js') }}"></script>-->
+
+
+<div id="app" style="width: 98%;">
+     <form action="/temporary_estimation" method="get">
+        <div class="row">
+
+            <div class="col-sm-3">
+                <div id="startDate" style="width: 96%;" class="input-group date col-md-5" data-link-field="dtp_input1"
+                     data-link-format="yyyy-mm">
+                    <span class="input-group-addon">截止月份</span>
+                    <input class="form-control" size="16" type="text" value="{{ _start_date }}" >
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+
+                </div>
+                <input type="hidden" id="dtp_input1" name="startDate" value="{{ _start_date }}"/><br/>
+            </div>
+
+            <div class="col-sm-2">
+                <button type="submit" class="btn btn-primary btn-mini">搜索</button>
+            </div>
+        </div>
+
+    </form>
+   <div>
+       <select id="vendors" multiple>
+           {% for vendor_name in vendors_names %}
+           <option value="{{vendor_name}}">{{vendor_name}}</option>
+           {% end %}
+       </select>
+        <button type="button" class="download btn btn-info" disabled>下载</button>
+    </div>
+    <div id="grid">
+
+    </div>
+
+</div>
+<script>
+    var jsonData = {}
+    var tempData = {% raw listData.to_json(orient='records') %}
+    jsonData.Rows = M(tempData).order_by('供应商',1).get()
+    var option = {
+                columns: [],
+                width: '100%',
+                pkName: 'id',
+                pageSizeOptions: [5, 10, 15, 20],
+                height: '100%',
+                usePager:false,
+                data:jsonData,
+        fixedCellHeight: false,
+        rownumbers:true,
+        onAfterShowData:function () {
+            $(".download").removeAttr('disabled');
+        }
+            };
+    for(var k in jsonData.Rows[0]){
+        var obj = {display: k, name:k , width: 150}
+        if(k=='供应商'){
+            obj['frozen'] = true;
+             obj['totalSummary'] = {render:function (a, b, c) {
+                    return '<div style="color: #f7632b;font-weight: bold;">合计</div>'
+                }};
+        }
+          if(['供应商','月结方式'].indexOf(k)<0){
+            // console.log(k)
+            obj['type'] = 'float';
+            obj['totalSummary'] = {type:'sum',render:function (a, b, c) {
+                    return '<div style="color: #f7632b;font-weight: bold;">'+parseFloat(a.sum).toFixed(3)+'</div>'
+                }};
+
+        }
+        option.columns.push(obj)
+    }
+
+    require(['jquery','ligerui'], function ($) {
+         //v1.02以上支持直接返回grid的管理对象
+        $grid = $("#grid").ligerGrid(option);
+
+        $("#vendors").change(function(){
+            var names= $(this).val();
+            names = names?names:[];
+
+            $grid.options.data = jsonData;
+            // console.log($grid)
+
+            $grid.loadData(function (row_data,row_index) {
+                if(names.length==0 || names[0] == '-'){
+                    return true
+                }
+                return names.indexOf(row_data['供应商'])>-1
+            });
+        });
+
+        $(".download").click(function () {
+            require(['xlsx'], function (XLSX) {
+                var $grid1_table = $(".l-grid1 table.l-grid-body-table").clone();
+                var $grid1_header = $(".l-grid1 table.l-grid-header-table").clone();
+
+                var $grid2_table = $(".l-grid2 table.l-grid-body-table").clone();
+                var $grid2_header = $(".l-grid2 table.l-grid-header-table").clone();
+
+
+                //取第一行，放到表2头部
+                var $gh1_tds = $grid1_header.find("tr").eq(0).find(">td");
+                console.log($gh1_tds)
+                for(var i=$gh1_tds.length-1;i>-1;i--){
+                    var $td = $gh1_tds.eq(i).clone();
+                    console.log("td",$td);
+                    $grid2_header.find('tr').eq(0).prepend($td)
+                }
+                // console.log('$grid2_header',$grid2_header[0]);
+                $grid2_table.prepend($('<thead></thead>').append($grid2_header.find('tr').eq(0)));
+
+                $grid1_table.find("tr").each(function () {
+                    var $tr = $(this);
+                    var id1 = $tr.attr('id');
+                    var id2 = String(id1).replace('|1|','|2|');
+                    // console.log("id2",id2);
+                    var $tds = $tr.find(">td");
+                    for(var i=$tds.length-1;i>-1;i--){
+                        var $td = $tds.eq(i).clone();
+                        $grid2_table.find("tbody>tr[id='"+id2+"']").prepend($td)
+                    }
+                });
+
+                console.log($grid2_table[0]);
+
+                var wb = XLSX.utils.table_to_book($grid2_table[0], {sheet:"Sheet(1)"});
+
+                /* generate download */
+                XLSX.writeFile(wb, "暂估表.xlsx");
+
+            });
+        });
+    });
+</script>
+
+<script>
+    require(['datepicker'], function () {
+        $("#startDate").datetimepicker({
+            format: "yyyy-mm",
+            startView: 3,
+            minView: 3,
+            language: 'zh-CN',
+            autoclose: true,
+            // endDate: new Date(),
+            initialDate: "{{_start_date}}"
+        }).on('changeDate', function (ev) {
+            console.log(ev.date.format('yyyy-mm'));
+            $("#dtp_input1").val(ev.date.format('yyyy-mm'));
+            //$(ev.target).closest('form').submit();
+        });
+
+    });
+</script>
+{% end %}

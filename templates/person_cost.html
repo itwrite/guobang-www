@@ -1,0 +1,239 @@
+{% extends "layout/base.html" %}
+
+{% block body %}
+<link rel="stylesheet" href="{{ static_url('js/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css') }}"
+      type="text/css">
+
+<style>
+  .l-grid-header-inner th{
+        position: relative;
+        min-height: 46px;
+        height: 46px;
+    }
+</style>
+
+<div id="app" style="width: 98%;">
+    <form action="/person_cost" method="get">
+        <div class="row">
+            <div class="col-sm-2">
+                <div class="input-group">
+                    <span class="input-group-addon">部门</span>
+                    <select name="cDepCode" title="" class="form-control">
+                        <option value="">全部</option>
+                        {% for i,row in all_department_df.iterrows() %}
+                        {% if row['cDepCode']== _depCode%}
+                        <option value="{{ row['cDepCode']}}" selected="selected">{{row['cDepName']}}</option>
+                        {% else %}
+                        <option value="{{ row['cDepCode']}}">{{row['cDepName']}}</option>
+                        {% end%}
+                        {% end %}
+                    </select>
+                </div>
+
+            </div>
+            <!--<div class="col-sm-2">-->
+                <!--<div class="input-group">-->
+                    <!--<span class="input-group-addon">部门</span>-->
+                    <!--<select name="cPersonCode" title="" class="form-control">-->
+                        <!--<option value="">全部</option>-->
+                        <!--{% for i,row in _all_person_df.iterrows() %}-->
+                        <!--{% if row['cPersonCode']== _personCode%}-->
+                        <!--<option value="{{ row['cPersonCode']}}" selected="selected">{{row['cPersonName']}}</option>-->
+                        <!--{% else %}-->
+                        <!--<option value="{{ row['cPersonCode']}}">{{row['cPersonName']}}</option>-->
+                        <!--{% end%}-->
+                        <!--{% end %}-->
+                    <!--</select>-->
+                <!--</div>-->
+
+            <!--</div>-->
+            <div class="col-sm-3">
+                <div id="startDate" style="width: 96%;" class="input-group date col-md-5" data-link-field="dtp_input1"
+                     data-link-format="yyyy-mm">
+                    <span class="input-group-addon">开始月份</span>
+                    <input class="form-control" size="16" type="text" value="{{ _start_date }}" >
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                </div>
+                <input type="hidden" id="dtp_input1" name="startDate" value="{{ _start_date }}"/><br/>
+            </div>
+            <div class="col-sm-3">
+                <div id="endDate" style="width: 96%;" class="input-group date col-md-5" data-link-field="dtp_input2"
+                     data-link-format="yyyy-mm">
+                    <span class="input-group-addon">结束月份</span>
+                    <input class="form-control" size="16" type="text" value="{{ _end_date }}" >
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                </div>
+                <input type="hidden" id="dtp_input2" name="endDate" value="{{ _end_date }}"/><br/>
+            </div>
+            <div class="col-sm-2">
+                <button type="submit" class="btn btn-primary btn-mini">搜索</button>
+            </div>
+        </div>
+
+    </form>
+    <div class="my-buttons">
+        <!--<select id="people" multiple></select>-->
+        <button type="button" class="download btn btn-info" disabled>下载</button>
+    </div>
+    <div id="grid">
+
+    </div>
+    <script>
+        var jsonData = {}
+    jsonData.Rows = {% raw listData.to_json(orient='records') %}
+
+    function getOption(rows,callback) {
+        var p = {
+                columns: [],
+                width: '100%',
+                pkName: 'id',
+                pageSizeOptions: [5, 10, 15, 20],
+                height: '100%',
+                usePager:false,
+                data:{Rows:rows},
+                onAfterShowData:function () {
+                    $(".download").removeAttr('disabled');
+                }
+            };
+
+        for(var k in rows[0]){
+            var obj = {display: k, name:k , width: 150,isSort:false}
+            if(typeof callback == 'function'){
+                obj = callback(k,obj)
+            }
+            p.columns.push(obj)
+        }
+        return p;
+    }
+    var frozenColumns = [];
+        var peopleArr = [];
+
+    var option = getOption(jsonData.Rows,function (k,obj) {
+        if(k=='科目'){
+            obj['frozen'] = true;
+            frozenColumns.push(obj);
+        }
+         if(['科目','合计'].indexOf(k)<0){
+            peopleArr.push(obj);
+        }
+        return obj;
+    });
+
+
+    require(['jquery','ligerui'], function ($) {
+
+        //v1.02以上支持直接返回grid的管理对象
+        $grid = $("#grid").ligerGrid(option);
+        console.log($grid);
+        //
+        // $("#people").html('').append($('<option value="-">全部</option>'));
+        // $.each(peopleArr,function (i,n){
+        //     var $option = $('<option></option>').attr({value:n.name}).html(n.name);
+        //     $("#people").append($option);
+        // });
+        //
+        // $("#people").change(function () {
+        //     var fields= $(this).val();
+        //     console.log(fields);
+        //     if(fields.length==0 || fields[0] == '-'){
+        //         fields = [];
+        //         $.each(peopleArr,function (j, o) {
+        //             fields.push(o.name)
+        //         })
+        //     }
+        //     fields.unshift('科目');
+        //     fields.push('合计');
+        //     var rows = M(jsonData.Rows).select(fields)
+        //     var opt = getOption(rows,function (k, obj) {
+        //           if(k=='科目'){
+        //                 obj['frozen'] = true;
+        //           }
+        //           return obj;
+        //     });
+        //     console.log(opt);
+        //     $grid.columns = $grid.options.columns = opt.columns;
+        //
+        //     $('#grid').ligerGrid(opt);
+        // });
+
+        $(".download").click(function () {
+            require(['xlsx'], function (XLSX) {
+                var $grid1_table = $(".l-grid1 table.l-grid-body-table").clone();
+                var $grid1_header = $(".l-grid1 table.l-grid-header-table").clone();
+
+                var $grid2_table = $(".l-grid2 table.l-grid-body-table").clone();
+                var $grid2_header = $(".l-grid2 table.l-grid-header-table").clone();
+
+
+                //取第一行，放到表2头部
+                var $gh1_tds = $grid1_header.find("tr").eq(0).find(">td");
+                console.log($gh1_tds)
+                for(var i=$gh1_tds.length-1;i>-1;i--){
+                    var $td = $gh1_tds.eq(i).clone();
+                    console.log("td",$td);
+                    $grid2_header.find('tr').eq(0).prepend($td)
+                }
+                console.log('$grid2_header',$grid2_header[0])
+                $grid2_table.prepend($('<thead></thead>').append($grid2_header.find('tr').eq(0)));
+
+                $grid1_table.find("tr").each(function () {
+                    var $tr = $(this);
+                    var id1 = $tr.attr('id');
+                    var id2 = String(id1).replace('|1|','|2|');
+                    console.log("id2",id2);
+                    var $tds = $tr.find(">td");
+                    for(var i=$tds.length-1;i>-1;i--){
+                        var $td = $tds.eq(i).clone();
+                        $grid2_table.find("tbody>tr[id='"+id2+"']").prepend($td)
+                    }
+                });
+
+                console.log($grid2_table[0]);
+
+                var wb = XLSX.utils.table_to_book($grid2_table[0], {sheet:"Sheet(1)"});
+
+                /* generate download */
+                XLSX.writeFile(wb, "个人费用表.xlsx");
+
+            });
+        });
+    });
+
+
+    </script>
+</div>
+
+
+<script>
+    require(['datepicker'], function () {
+        $("#startDate").datetimepicker({
+            format: "yyyy-mm",
+            startView: 3,
+            minView: 3,
+            language: 'zh-CN',
+            autoclose: true,
+            // endDate: new Date(),
+            initialDate: "{{_start_date}}"
+        }).on('changeDate', function (ev) {
+            console.log(ev.date.format('yyyy-mm'));
+            $("#dtp_input1").val(ev.date.format('yyyy-mm'));
+            //$(ev.target).closest('form').submit();
+        });
+
+        $("#endDate").datetimepicker({
+            format: "yyyy-mm",
+            startView: 3,
+            minView: 3,
+            language: 'zh-CN',
+            autoclose: true,
+            // endDate: new Date(),
+            initialDate: "{{_end_date}}"
+        }).on('changeDate', function (ev) {
+            //
+            $("#dtp_input2").val(ev.date.format('yyyy-mm'));
+            //$(ev.target).closest('form').submit();
+        });
+    });
+</script>
+{% end %}
+

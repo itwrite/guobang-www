@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>{{ escape(handler.settings["web_title"]) }}</title>
+    <link rel="stylesheet" href="{{ static_url('js/bootstrap-3.3.5-dist/css/bootstrap.min.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ static_url('css/weui.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="{{ static_url('js/jasmine/layout/css/jquery-layout.css') }}"/>
+    <link rel="stylesheet" href="{{ static_url('js/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css') }}"
+      type="text/css">
+
+<link href="{{ static_url('js/liger-ui-v1.3.3/lib/ligerUI/skins/Aqua/css/ligerui-all.css') }}" rel="stylesheet" type="text/css" />
+    <!--<script type="text/javascript" src="{{ static_url('js/jquery-1.11.1.min.js') }}"></script>-->
+    <!--<script type="text/javascript" src="{{ static_url('js/bootstrap-3.3.5-dist/js/bootstrap.min.js') }}"></script>-->
+    <script src="{{ static_url('js/require.js') }}"></script>
+    <script src="{{ static_url('js/model-1.0.2.js') }}"></script>
+    <!--<script src="{{ static_url('js/js-xlsx/shim.js') }}"></script>-->
+    <!--<script src="{{ static_url('js/js-xlsx/xlsx.js') }}"></script>-->
+
+    <script>
+        require.config({
+            baseUrl: "{{ static_url('js') }}",
+            paths: {
+                // the left side is the module ID,
+                // the right side is the path to
+                // the jQuery file, relative to baseUrl.
+                // Also, the path should NOT include
+                // the '.js' file extension. This example
+                // is using jQuery 1.9.0 located at
+                // js/lib/jquery-1.9.0.js, relative to
+                // the HTML page.
+                jquery: 'jquery-1.11.1.min',
+                layout: 'jasmine/layout/jquery-layout.1.0.1',
+                bootstrap: 'bootstrap-3.3.5-dist/js/bootstrap.min',
+                weui: 'weui.min',
+                vue: 'vue.min',
+                xlsx: "js-xlsx/dist/xlsx",
+                shim: 'js-xlsx/shim',
+                jszip: "js-xlsx/dist/jszip",
+                datepicker: "bootstrap-datetimepicker/js/bootstrap-datetimepicker.min",
+                ligerui: "liger-ui-v1.3.3/lib/ligerUI/js/ligerui.all",
+                model: "model-1.0.2"
+            },
+            shim: {
+                jquery: {
+                    exports: 'jquery'
+                },
+                bootstrap: {
+                    deps: ['jquery']
+                },
+                detepicker: {
+                    deps: ['jquery','bootstrap']
+                },
+                xlsx:{
+                    deps:['shim','jszip']
+                },
+                ligerui: {
+                    deps: ['jquery']
+                }
+            }
+        });
+    </script>
+    <script>
+        Date.prototype.format = function (formatString) {
+            var o = {
+                "m+": this.getMonth() + 1, //month
+                "d+": this.getDate(), //day
+                "h+": this.getHours() % 12 === 0 ? 12 : (this.getHours() % 12 < 10 ? "0" + this.getHours() % 12 : this.getHours() % 12), //hours
+                "H+": (this.getHours() < 10 ? "0" + this.getHours() : this.getHours()), //hours
+                "g+": this.getHours() % 12 === 0 ? 12 : (this.getHours() % 12 < 10 ? this.getHours() % 12 : this.getHours() % 12), //hours
+                "G+": this.getHours(), //hours
+                "i+": (this.getMinutes() < 10 ? "0" + this.getMinutes() : this.getMinutes()), //minute
+                "s+": (this.getSeconds() < 10 ? "0" + this.getSeconds() : this.getSeconds()), //second
+                "q+": Math.floor((this.getMonth() + 3) / 3), //
+                "S": this.getMilliseconds(), //millis second
+                "a": this.getHours() < 12 ? "am" : "pm",
+                "A": this.getHours() < 12 ? "AM" : "PM",
+                "Y": this.getFullYear()
+            };
+            var weeks = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+            for (var k in o) {
+                if (new RegExp("(" + k + ")").test(formatString)) {
+                    formatString = formatString.replace(RegExp.$1, (RegExp.$1.length === 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+                }
+            }
+            if (/(y+)/.test(formatString)) {
+                formatString = formatString.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+            }
+            if (/(w+)/.test(formatString)) {
+                formatString = formatString.replace(RegExp.$1, weeks[this.getDay()]);
+            }
+
+            if (/(E+)/.test(formatString)) {
+                //console.log(this.getMonth())
+                formatString = formatString.replace(RegExp.$1, months[this.getMonth()]);
+            }
+            return formatString;
+        };
+
+    </script>
+    <!-- ============== Jquery ============== -->
+    <!--<script src="assets/js/jquery-1.11.1.min.js"></script>-->
+    <!--<script src="assets/js/vue/dist/vue.min.js"></script>-->
+    <!--<script src="assets/js/jasmine/model/model-1.0.2.js"></script>-->
+    <!--<script src="assets/js/bootstrap-3.3.5-dist/js/bootstrap.min.js"></script>-->
+    <!--<script src="assets/js/common.js"></script>-->
+    <style>
+
+        [region='west'] {
+            border-right: 1px solid #dddddd;
+            width: 150px;
+        }
+
+        [region='north'] {
+            border-bottom: 1px solid #dddddd;
+            z-index: 0;
+            padding: 10px;
+            display: none;
+        }
+
+        [region='south'] {
+            border-top: 1px solid #dddddd;
+        }
+
+        [region='center'] {
+            padding: 0px;
+        }
+
+        a {
+            text-decoration: none !important;
+        }
+
+        .weui-cells {
+            margin-top: 0;
+        }
+
+        .weui-cells:before {
+            content: '';
+            height: 0;
+            border: 0;
+        }
+
+        [region] {
+            display: none;
+        }
+
+        #loading {
+            display: block;
+        }
+
+        .weui-cell.active {
+            background-color: #337ab7;
+            color: #fff;
+        }
+
+        .weui-cell.active:hover {
+            color: #fff;
+        }
+
+        select.form-control {
+            width: auto;
+        }
+
+        .form-control {
+            width: auto;
+        }
+
+        .weui-cell {
+            padding: 5px 15px;
+            font-size: 14px;
+        }
+
+        .row {
+            margin-right: 0;
+        }
+
+        .table-bordered > thead > tr > td, .table-bordered > thead > tr > th {
+            border-bottom-width: 1px;
+        }
+
+        .table-bordered td, .table-bordered th {
+            padding: 5px;
+        }
+
+        .table-bordered tr > td {
+            text-align: center;
+            word-wrap: normal;
+            word-break: break-word;
+            word-spacing: normal;
+        }
+
+        .table-bordered tr > td:not(:first-child) {
+            text-align: center;
+        }
+
+        .table-bordered tbody tr:hover {
+            background-color: cornsilk;
+        }
+
+        .l-grid-header-table thead th, .table-bordered tbody td {
+            width: 140px;
+            text-align: center;
+        }
+
+        /*.l-grid-header {*/
+            /*height: auto;*/
+            /*border-left: 1px solid #dddddd;*/
+            /*border-top: 1px solid #dddddd;*/
+            /*border-bottom: 0;*/
+            /*border-right: 1px solid #dddddd;*/
+
+        /*}*/
+        /*.l-grid-header .table-bordered,.l-grid-header .table-bordered thead tr > th:first-child,.l-grid-body .table-bordered,.l-grid-body .table-bordered tr > td:first-child{*/
+             /*border-left:0;*/
+        /*}*/
+
+        /*.l-grid-header .table-bordered, .l-grid-header .table-bordered thead tr:first-child > th, .l-grid-body .table-bordered, .l-grid-body .table-bordered tr:first-child > td {*/
+            /*border-top: 0;*/
+        /*}*/
+
+        /*.l-grid-body {*/
+            /*height: auto;*/
+            /*border-left: 1px solid #dddddd;*/
+            /*border-top: 0;*/
+            /*border-bottom: 1px solid #dddddd;*/
+            /*border-right: 1px solid #dddddd;*/
+        /*}*/
+        /*.l-grid-header-inner{*/
+            /*background: #dddddd;*/
+        /*}*/
+
+        .none-scroll {
+            overflow-y: scroll;
+            overflow-x: hidden;
+        }
+
+        /**设置滚动条的样式**/
+        .none-scroll::-webkit-scrollbar {
+            width: 17px;
+            height: 17px;
+        }
+
+        /**滚动槽**/
+        .none-scroll::-webkit-scrollbar-track {
+            box-shadow: inset 0 0 6px transparent;
+            border-radius: 10px;
+        }
+
+        /**滚动条滑块**/
+        .none-scroll::-webkit-scrollbar-thumb {
+            border-radius: 12px;
+            background: transparent;
+            -webkit-box-shadow: inset 0 0 6px transparent;
+        }
+
+        .none-scroll::-webkit-scrollbar-thumb:window-inactive {
+            background: transparent;
+        }
+    </style>
+</head>
+<body style="margin: 0;padding: 0;">
+
+<div id="loading" class="page__bd">
+    <div class="weui-loadmore">
+        <i class="weui-loading"></i>
+        <span class="weui-loadmore__tips">正在加载</span>
+    </div>
+
+</div>
+<!-- header -->
+<!--<div region="north">-->
+    <!--<table cellspacing="0" cellpadding="0">-->
+        <!--<tbody>-->
+        <!--<tr>-->
+            <!--<td>-->
+                <!--欢迎你，admin-->
+                <!--<a class="hide" href="{:URL('login/out')}">[退出]</a>-->
+            <!--</td>-->
+        <!--</tr>-->
+        <!--</tbody>-->
+    <!--</table>-->
+<!--</div>-->
+<!-- header -->
+<!-- left -->
+<div region="west">
+    <div class="weui-cells">
+        <a class="weui-cell weui-cell_access" href="/">
+            <div class="weui-cell__bd">
+                部门费用表
+            </div>
+            <div class="weui-cell__ft"></div>
+        </a>
+        <a class="weui-cell weui-cell_access" href="person_cost">
+            <div class="weui-cell__bd">
+                个人费用表
+            </div>
+            <div class="weui-cell__ft"></div>
+        </a>
+        <a class="weui-cell weui-cell_access" href="accounts_payable">
+            <div class="weui-cell__bd">
+                应付表
+            </div>
+            <div class="weui-cell__ft"></div>
+        </a>
+        <a class="weui-cell weui-cell_access" href="temporary_estimation">
+            <div class="weui-cell__bd">
+                暂估表
+            </div>
+            <div class="weui-cell__ft"></div>
+        </a>
+        <!--<a class="weui-cell weui-cell_access" href="capitalized_cost">-->
+            <!--<div class="weui-cell__bd">-->
+                <!--成本表-->
+            <!--</div>-->
+            <!--<div class="weui-cell__ft"></div>-->
+        <!--</a>-->
+
+        <a class="weui-cell weui-cell_access" href="capitalized_cost_by_class">
+            <div class="weui-cell__bd">
+                销售分类成本表
+            </div>
+            <div class="weui-cell__ft"></div>
+        </a>
+<!-- 租机收入成本表 -->
+      <a class="weui-cell weui-cell_access" href="ice_rent_cost">
+            <div class="weui-cell__bd">
+                租机收入成本表
+            </div>
+            <div class="weui-cell__ft"></div>
+        </a>
+    </div>
+</div>
+<!-- left -->
+
+<!-- center -->
+<div region="center">
+    {% block body %}{% end %}
+</div>
+<!-- center -->
+
+<!-- footer -->
+<div region="south">
+
+</div>
+<!-- footer -->
+
+<script type="text/javascript">
+    require(['jquery', 'layout'], function ($) {
+
+        function setGridHeight(_auto_w, _auto_h) {
+            var topBarHeight = $("body>[region='north']").outerHeight();
+            var formHeight = $("#app form:first-child").outerHeight();
+            var theadHeight = $("#app .l-grid-header .table-bordered").outerHeight();
+            var paddingHeight = 60;
+            $("#maingrid-body,#grid-body").height(_auto_h - formHeight - theadHeight - paddingHeight)
+        }
+
+        $('body,#test').jasmineLayout({
+            splitPanels: ["east", "west", "south", "north"],
+            splitWidth: 0,
+            onInit: function (_auto_w, _auto_h) {
+                // console.log("init");
+                $("body>[region]").css({display: "block"});
+                $("#loading").css({display: "none"});
+                setGridHeight(_auto_w, _auto_h)
+
+            },
+            onResize: function (_auto_w, _auto_h) {
+                setGridHeight(_auto_w, _auto_h);
+            }
+        });
+    });
+</script>
+</body>
+</html>

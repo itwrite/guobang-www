@@ -1,0 +1,21 @@
+AA_Agreement = {
+    'aaa.cCode':"",
+    'aaa.cName':"",
+    'aaa.iLZYJ':"",
+    'aaa.iLZFS':"",
+    'aaa.iMon':"",
+    'aaa.iDay1':"",
+    'aaa.iDay2':"",
+    'aaa.iDay3':"",
+    'aaa.iLZJZ':"",
+    'aaa.iPLNum':"",
+    'aaa.iZQ':"",
+    'aaa.dblZQNum':"",
+    'aaa.iGDSZR1':"",
+    'aaa.iGDSZR2':"",
+    'aaa.iGDSZR3':"",
+    'aaa.cMemo':"",
+    'aaa.dtDate':"",
+    'aaa.cMaker':"",
+    'aaa.ufts':""
+}

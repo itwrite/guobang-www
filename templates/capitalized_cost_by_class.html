@@ -1,0 +1,289 @@
+{% extends "layout/base.html" %}
+
+{% block body %}
+<style>
+      table[bordered] tr td[rel='total']{
+            font-weight: 500;
+            color: orangered;
+          background: cornsilk;
+        }
+     .table-bordered tbody tr:hover {
+            background-color: transparent;
+        }
+    .selections select{
+        border: 1px solid #ddd;
+        height: 200px;
+        width: 200px;
+    }
+
+    .l-grid-header-inner th{
+        position: relative;
+        min-height: 46px;
+        height: 46px;
+    }
+</style>
+<script src="{{ static_url('js/dataframe-1.0.1.js') }}"></script>
+<script src="{{ static_url('js/tableview-1.0.1.js') }}"></script>
+<div id="app">
+    <form action="/capitalized_cost_by_class" method="get">
+        <div class="row">
+
+            <div class="col-sm-3">
+                <div id="startDate" style="width: 96%;" class="input-group date col-md-5" data-link-field="dtp_input1"
+                     data-link-format="yyyy-mm">
+                    <span class="input-group-addon">开始月份</span>
+                    <input class="form-control" size="16" type="text" value="{{ _start_date }}" >
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                </div>
+                <input type="hidden" id="dtp_input1" name="startDate" value="{{ _start_date }}"/><br/>
+            </div>
+            <div class="col-sm-3">
+                <div id="endDate" style="width: 96%;" class="input-group date col-md-5" data-link-field="dtp_input2"
+                     data-link-format="yyyy-mm">
+                    <span class="input-group-addon">结束月份</span>
+                    <input class="form-control" size="16" type="text" value="{{ _end_date }}" >
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                </div>
+                <input type="hidden" id="dtp_input2" name="endDate" value="{{ _end_date }}"/><br/>
+            </div>
+            <div class="col-sm-2">
+                <button type="submit" class="btn btn-primary btn-mini">搜索</button>
+            </div>
+        </div>
+
+    </form>
+     <div class="my-buttons">
+        <button type="button" class="download btn btn-info" >下载</button>
+    </div>
+    <div id="maingrid" class="l-panel l-frozen l-empty" ligeruiid="maingrid" style="width: 100%;">
+        <div class="l-panel-bwarp">
+            <div class="l-panel-body">
+                <div class="l-grid l-grid-empty l-grid-hashorizontal">
+                    <div class="l-grid2" style="position: static;">
+                        <div class="l-grid-header l-grid-header2 none-scroll"
+                             style="height: auto;">
+                            <div class="l-grid-header-inner">
+
+                            </div>
+                        </div>
+                        <div id="maingrid-body" class="l-grid-body l-grid-body2 l-scroll"
+                             style="height: auto;overflow-y: scroll;">
+                            <div class="l-grid-body-inner">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <script>
+        require(['jquery'], function ($) {
+
+        $(".l-grid-body2.l-scroll").scroll(function () {
+            var scrollLeft = $(this).scrollLeft();
+            var r = $(this).find(">.l-grid-body-inner").width() - scrollLeft - $(this).width();
+            if (r < 18) {
+                scrollLeft += 18
+            }
+            // console.log(scrollLeft)
+            $(".l-grid-header2").scrollLeft(scrollLeft);
+        });
+
+
+         var df = new DataFrame({
+            data: {% raw listData.to_json(orient='records') %},
+            onChange: function (data) {
+                // console.log('data', data);
+                var months = this.getValues('月份');
+                console.log('months',months)
+                months.values.sort(function (a,b) {
+
+                    var reverse = !1;
+                    var d_a = (new Date())
+                        d_a.setFullYear(a);
+                    var d_b = (new Date())
+                        d_b.setFullYear(b);
+                    var res = d_a.getTime()>d_b.getTime()?1:(d_a.getTime() != d_b.getTime() ? -1 : 0)
+                    return res* [1, -1][+reverse];
+                });
+                var extraArr = [
+                    {
+                        text:"台数",
+                        field:"发货数量"
+                    },
+                    {
+                        text:"销售收入",
+                        field:"发货含税金额"
+                    },
+                     {
+                        text:"材料成本",
+                        field:"销售材料成本"
+                    },
+                     {
+                        text:"不含税销售",
+                        field:"发货无税金额"
+                    },{
+                        text:"销售毛利",
+                        field:"发货毛利"
+                    }
+                ];
+
+                /**
+                 * 要统计的维度
+                 * @type {Array}
+                 */
+                var expressions = [];
+
+                $.each(extraArr,function(j,m){
+
+                    $.each(months.values,function(i,n){
+                        var obj = {name:m.text+'<div style="font-weight:100;font-size:10px;color:#d44950;position:absolute;bottom: 0;left: 0;right: 0;margin:0 auto;">('+n+")</div>"};
+                        obj['value'] = function(d){
+
+                            var _d = this.filter('月份','=',n);
+
+                            return this.sum(m.field,_d);
+                        };
+                        obj['label'] = m.text;
+                        obj['type'] = m.text=='台数' ? 'int':'2f';
+                        expressions.push(obj);
+                    });
+                    var obj = {name:m.text+"总计"};
+                        obj['value'] = function(d){
+                            return this.sum(m.field);
+                        };
+                        obj['type'] = m.text=='台数' ? 'int':'2f';
+                        obj['label'] = m.text+"总计";
+                    expressions.push(obj);
+                });
+
+
+               var tableData = TableView(data._data).getPivotTableData({
+                    columns: [
+                        {
+                            name: '存货分类',
+                            sort:{
+                                by:'asc'
+                            },
+                             total:{
+                                show:true,
+                                position:'bottom'
+                            }
+                        },
+                        {
+                            name: '存货编码',
+                            total:{
+                                show:true,
+                                position:'bottom'
+                            }
+                        },
+                        {
+                            name: '存货名称'
+                        }
+                    ],
+                    expressions: expressions
+                    }
+                );
+                console.log(tableData);
+
+                $('.l-grid-header-inner,.l-grid-body-inner').width(tableData.header[0].children.length*140)
+                function getAttrHtml(attr) {
+                    var arr = [];
+                    $.each(attr, function (b, c) {
+                        arr.push(b + '="' + c + '"')
+                    });
+                    return arr.join(" ");
+                }
+
+                var theadHtml = '<table class="table-bordered l-grid-header-table" cellpadding="0" cellspacing="0" bordered>';
+                theadHtml += '<thead>';
+                $.each(tableData.header, function (i, n) {
+            theadHtml += '<tr ' + getAttrHtml(n.attr) + '>'
+            $.each(n.children, function (j, m) {
+                theadHtml += '<th ' + getAttrHtml(m.attr) + '>'
+                theadHtml += m.value;
+                theadHtml += '</th>'
+            });
+            theadHtml += '</tr>'
+        });
+                theadHtml += '</thead>';
+                theadHtml += '</table>';
+
+                $('.l-grid-header-inner').html(theadHtml);
+
+
+                var tableHtml = '<table class="table-bordered" cellpadding="0" cellspacing="0" bordered>';
+                tableHtml += '<tbody>';
+                $.each(tableData.data, function (i, n) {
+            tableHtml += '<tr ' + getAttrHtml(n.attr) + '>'
+            $.each(n.children, function (j, m) {
+                tableHtml += '<td ' + getAttrHtml(m.attr) + '>'
+                tableHtml += m.value;
+                tableHtml += '</td>'
+            });
+            tableHtml += '</tr>'
+        });
+                tableHtml += '</tbody>';
+                tableHtml += '</table>';
+                $('.l-grid-body-inner').html(tableHtml);
+            }
+        });
+
+         $(".download").click(function () {
+                require(['xlsx'], function (XLSX) {
+
+                    var $grid2_table = $(".l-grid2 .l-grid-body-inner>table").clone();
+                    var $grid2_header = $(".l-grid2 .l-grid-header-inner>table").clone();
+
+
+
+                    $grid2_table.prepend($('<thead></thead>').append($grid2_header.find('tr').eq(0)));
+
+
+                    var wb = XLSX.utils.table_to_book($grid2_table[0], {sheet:"Sheet(1)"});
+
+                    /* generate download */
+                    XLSX.writeFile(wb, "销售分类成本表.xlsx");
+
+                });
+            });
+    });
+    </script>
+</div>
+
+<script>
+    require(['datepicker'], function () {
+        $("#startDate").datetimepicker({
+            format: "yyyy-mm",
+            startView: 3,
+            minView: 3,
+            language: 'zh-CN',
+            autoclose: true,
+            // endDate: new Date(),
+            initialDate: "{{_start_date}}"
+        }).on('changeDate', function (ev) {
+            console.log(ev.date.format('yyyy-mm'));
+            $("#dtp_input1").val(ev.date.format('yyyy-mm'));
+            //$(ev.target).closest('form').submit();
+        });
+
+        $("#endDate").datetimepicker({
+            format: "yyyy-mm",
+            startView: 3,
+            minView: 3,
+            language: 'zh-CN',
+            autoclose: true,
+            // endDate: new Date(),
+            initialDate: "{{_end_date}}"
+        }).on('changeDate', function (ev) {
+            //
+            $("#dtp_input2").val(ev.date.format('yyyy-mm'));
+            //$(ev.target).closest('form').submit();
+        });
+    });
+</script>
+{% end %}
