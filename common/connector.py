@@ -2,7 +2,7 @@ import pandas as pd
 import yaml
 import sqlalchemy
 
-with open('/var/www/bigdata/conf/db.yaml', 'r') as f:
+with open('../conf/db.yaml', 'r') as f:
     conf = yaml.load(f)
 
 # sql_name = 'SQL_LEGO'

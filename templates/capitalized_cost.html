@@ -58,16 +58,19 @@
             $(".download").removeAttr('disabled');
         }
             };
+
+        var fixed_columns = ["发退货单号" ,"客户编码" ,"客户简称" , "币种" ,"存货编码" , "存货名称"];
+
     for(var k in jsonData.Rows[0]){
         var obj = {display: k, name:k , width: 150,isSort:false}
-        if(k=='科目'){
+        if(fixed_columns.indexOf(k)>-1){
             obj['frozen'] = true;
         }
         if(str1.indexOf(k)>-1){
             console.log(k)
             obj['type'] = 'float';
             obj['totalSummary'] = {type:'sum',render:function (a, b, c) {
-                    return '<div style="color: #f7632b;font-weight: bold;">'+parseFloat(a.sum).toFixed(3)+'</div>'
+                    return '<div style="color: #e08e0b;font-weight: bold;">'+parseFloat(a.sum).toFixed(3)+'</div>'
                 }};
 
         }

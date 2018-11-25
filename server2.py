@@ -34,7 +34,6 @@ from pandas import DataFrame
 from dateutil.relativedelta import relativedelta
 from tornado.options import define, options
 
-# i-synergy 目标数据库（Mysql）
 from common import connector
 from common.function import *
 
@@ -142,30 +141,35 @@ class DepartmentCostHandler(BaseHandler):
         _d_end_date = datetime.datetime.strptime(_end_date, '%Y-%m')
         _d_end_date = (_d_end_date + relativedelta(months=1))
 
+        sql = " SELECT DATE_FORMAT(ga.dbill_date,'%%Y-%%m') as iYPeriod,d.cDepName,d.cDepCode,p.cPersonName, ga.cperson_id,c.ccode, c.ccode_name,round(sum(ga.mc),4) as total_mc,round(sum(ga.md),4) as total_md"
+        sql += " FROM fin_gl_accvouch ga"
+        sql += " JOIN fin_department d on(ga.cdept_id = d.cDepCode)"
+        sql += " JOIN fin_code c on ga.ccode = c.ccode"
+        sql += " LEFT JOIN fin_person p on p.cPersonCode = ga.cperson_id"
+        sql += " WHERE (ga.dbill_date >= '%s' and ga.dbill_date < '%s') and ga.cdept_id = '1' and c.cclass in ('损益') and c.iyear = '%s' " % (
+            _d_start_date.strftime('%Y-%m-%d'), _d_end_date.strftime('%Y-%m-%d'), _d_start_date.strftime('%Y'))
+        sql += " GROUP by DATE_FORMAT(ga.dbill_date,'%%Y-%%m'),d.cDepName,d.cDepCode,p.cPersonName, ga.cperson_id,c.ccode, c.ccode_name"
+
+        all_vouch_df = pd.read_sql_query(sql, db_local.conn)
+
+        code_names_dict = {}
+        for i, row in all_vouch_df.iterrows():
+            code_names_dict[row['ccode']] = row['ccode_name']
+
+        codes = all_vouch_df['ccode'].drop_duplicates()
+
+        # 初始化
+        dict_obj = {'科目': [], '科目编码': []}
+        columns = ['科目编码', '科目']
+        n = 0
+
         # 获取所有部门
-        all_department_df = self.get_all_departments_df()
+        sql = " select * from fin_department"
+        all_department_df = pd.read_sql_query(sql, db_local.conn)
 
         # 找出某个部门
         department_df = all_department_df[all_department_df['cDepCode'] == _depCode]
-
-        # 获取需要统计的科目(部门、个人)
-        codes_df = self.get_codes_df(_d_start_date.strftime("%Y"))
-
-        # 过滤一份用来显示的科目列表
-        # code_names_df = codes_df.copy()
-        # for row in codes_df.iterrows():
-        #     code_names_df = self.get_except_parent_codes_df(row[1]['ccode'], code_names_df)
-        #
-        # # 去重
-        # code_names = code_names_df['ccode_name'].drop_duplicates()
-        code_names = codes_df['ccode_name'].drop_duplicates()
-
-        # 初始化
-        dict_obj = {'科目': []}
-        columns = ['科目']
-        n = 0
-
-        # 其实只有一个部门
+        # 其实只获取一个部门
         for i, row in department_df.iterrows():
 
             # ==================
@@ -173,31 +177,27 @@ class DepartmentCostHandler(BaseHandler):
             dept_name = row['cDepName']
             for j in range(0, get_month_delta(_d_start_date, _d_end_date)):
 
-                start_date = (_d_start_date + relativedelta(months=j))
-                end_date = (start_date + relativedelta(months=1))
+                _date = (_d_start_date + relativedelta(months=j))
 
-                vouch_df = self.get_acc_vouch(start_date, end_date)
-
-                _ext_fix = "(" + (_d_start_date + relativedelta(months=j)).strftime("%Y-%m") + ")"
-                if _ext_fix not in dict_obj:
-                    dict_obj[dept_name + _ext_fix] = []
-                    columns.append(dept_name + _ext_fix)
+                _ext_fix = "(" + _date.strftime("%Y-%m") + ")"
+                column_name = dept_name + _ext_fix
+                if column_name not in dict_obj:
+                    dict_obj[column_name] = []
+                    columns.append(column_name)
 
                 total_cost = 0
-                for code_name in code_names:
+                for code in codes:
                     if n == 0:
-                        dict_obj['科目'].append(code_name)
-                    c_names = codes_df[codes_df['ccode_name'] == code_name]
-                    arr = []
-                    for r in c_names.iterrows():
-                        arr.append(r[1]['ccode'])
-                    cost = self.sum_cost(vouch_df, row['cDepCode'], arr)
-                    dict_obj[dept_name + _ext_fix].append(round(cost, 2))
+                        dict_obj['科目'].append(code_names_dict[code])
+                        dict_obj['科目编码'].append(code)
+                    cost = self.sum_cost(all_vouch_df, row['cDepCode'], [code], _date)
+                    dict_obj[column_name].append(round(cost, 2))
                     total_cost += cost
                 # 合计
                 if n == 0:
                     dict_obj['科目'].append("合计")
-                dict_obj[dept_name + _ext_fix].append(round(total_cost, 2))
+                    dict_obj['科目编码'].append('')
+                dict_obj[column_name].append(round(total_cost, 2))
                 n += 1
 
         drop_index = []
@@ -207,7 +207,7 @@ class DepartmentCostHandler(BaseHandler):
             i_total = 0
             for col in columns:
 
-                if col != '科目':
+                if col != '科目' and col != '科目编码':
                     i_total += dict_obj[col][i]
             if i_total == 0:
                 drop_index.append(i)
@@ -218,8 +218,8 @@ class DepartmentCostHandler(BaseHandler):
         columns.append('合计')
         dict_obj['合计'] = total2_arr
 
-        data = DataFrame(dict_obj, columns=columns)
-        data.drop(data.index[drop_index], inplace=True)
+        data = pd.DataFrame(dict_obj, columns=columns)
+        # data.drop(data.index[drop_index], inplace=True)
 
         self.render("department_cost.html", listData=data,
                     department_df=department_df,
@@ -230,44 +230,13 @@ class DepartmentCostHandler(BaseHandler):
                     )
 
     @staticmethod
-    def get_all_departments_df():
-        sql = " select * from fin_department"
-        return pd.read_sql_query(sql, db_local.conn)
-
-    @staticmethod
-    def get_codes_df(year):
-        class_lst = ['资产', '负债', '共同', '权益', '成本', '损益']
-        year = year.strftime("%Y") if isinstance(year, datetime.datetime) else year
-        sql = " SELECT c.ccode_name,c.ccode "
-        sql += " from fin_code c where c.iyear='%s' and c.bdept=1 and c.cclass in ('%s') order by c.ccode asc" % (
-            year, "','".join(class_lst))
-
-        return pd.read_sql_query(sql, db_local.conn)
-
-    #
-    # 找出两个时间内的数据
-    @staticmethod
-    def get_acc_vouch(_start_date, _end_date):
-        _startDate = _start_date.strftime("%Y-%m-%d") if isinstance(_start_date, datetime.datetime) else _start_date
-        _endDate = _end_date.strftime("%Y-%m-%d") if isinstance(_end_date, datetime.datetime) else _end_date
-
-        main_sql = "SELECT ga.ccode,ga.cdept_id,d.cDepCode,ga.cperson_id,sum(ga.mc) as total_mc,sum(ga.md) as total_md"
-        main_sql += " FROM fin_gl_accvouch ga"
-        main_sql += " JOIN fin_department d on(ga.cdept_id = d.cDepCode)"
-        main_sql += " WHERE (ga.dbill_date between '%s' and '%s')" % (_startDate, _endDate)
-        main_sql += " GROUP by ga.ccode,ga.cdept_id, d.cDepCode,ga.cperson_id"
-
-        return pd.read_sql_query(main_sql, db_local.conn)
-
-    @staticmethod
-    def sum_cost(df, dep_code, codes_list):
-        new_df = df.query("cdept_id=='%s' or cDepCode=='%s' " % (
-        dep_code, dep_code))  # ['cdept_id'] == dep_code or df['cDepCode'] == dep_code)]
+    def sum_cost(df, dep_code, codes_list, _date):
+        new_df = df.query("cDepCode=='%s' and iYPeriod =='%s' " % (dep_code, _date.strftime('%Y-%m')))
         new_df = new_df.loc[new_df['ccode'].isin(codes_list)]
         y = 0
-        for i, row in new_df.iterrows():
+        for i, r in new_df.iterrows():
             # print(row)
-            y += row['total_md']
+            y += r['total_mc']
         return y
 
 
@@ -292,74 +261,74 @@ class PersonCostHandler(BaseHandler):
         if _end_date == '':
             _end_date = _d_now_month
 
-        _d_startDate = datetime.datetime.strptime(_start_date, '%Y-%m')
+        _d_start_date = datetime.datetime.strptime(_start_date, '%Y-%m')
 
-        _d_endDate = datetime.datetime.strptime(_end_date, '%Y-%m')
-        _d_endDate = (_d_endDate + relativedelta(months=1))
+        _d_end_date = datetime.datetime.strptime(_end_date, '%Y-%m')
+        _d_end_date = (_d_end_date + relativedelta(months=1))
+
+        sql = " SELECT ga.ccode,c.ccode_name,ga.cperson_id,ga.cdept_id,ROUND(SUM(ga.mc),4) as total_mc,ROUND(SUM(ga.md),4) as total_md "
+        sql += " from fin_gl_accvouch ga "
+        sql += " join fin_code c on ga.ccode = c.ccode and c.bperson = 1 and c.iyear = '%s'" % _d_start_date.strftime('%Y')
+        sql += " WHERE (ga.dbill_date >= '%s' and ga.dbill_date < '%s')" % (_d_start_date.strftime('%Y-%m'), _d_end_date.strftime('%Y-%m'))
+        sql += " GROUP BY ga.ccode,c.ccode_name,ga.cperson_id,ga.cdept_id"
+
+        all_vouch_df = pd.read_sql_query(sql, db_local.conn)
+
+        code_names_dict = {}
+        for i, row in all_vouch_df.iterrows():
+            code_names_dict[row['ccode']] = row['ccode_name']
+
+        codes = all_vouch_df['ccode'].drop_duplicates()
+
+        # 初始化
+        dict_obj = {'科目': [], '科目编码': []}
+        columns = ['科目编码', '科目']
+        n = 0
 
         # 获取所有部门
-        all_department_df = DepartmentCostHandler.get_all_departments_df()
-        department_df = all_department_df[all_department_df['cDepCode'] == _depCode]
-        if _depCode == '':
-            department_df = all_department_df
+        sql = " select * from fin_department"
+        all_department_df = pd.read_sql_query(sql, db_local.conn)
 
-        # 获取所有数据
-        sql = self.get_acc_vouch_sql(_d_startDate, _d_endDate)
-        # self.write(sql)
-        # self.flush()
+        # 找出某个部门
+        # department_df = all_department_df[all_department_df['cDepCode'] == '1']
 
-        all_accvouch_df = pd.read_sql_query(sql, db_local.conn)
-
-        # 获取需要统计的科目
-        codes_df = self.get_codes_df(_d_startDate.strftime("%Y"))
-
-        for row in codes_df.iterrows():
-            codes_df = self.get_except_parent_codes_df(row[1]['ccode'], codes_df)
-
-        code_names = codes_df['ccode_name'].drop_duplicates()
-
-        all_person_df = self.get_person_df(_depCode)
-        # 初始化
-        data = {'科目': []}
-
-        columns = ['科目']
-        n = 0
-        for i, dept in department_df.iterrows():
+        for i, dept in all_department_df.iterrows():
             d_name = dept['cDepName']
-            person_df = self.get_person_df(dept['cDepCode'],_personCode)
+            # 找出部门对应的所有个人数据
+            person_df = self.get_person_df(dept['cDepCode'])
             for j, person in person_df.iterrows():
                 p_name = person['cPersonName']
                 key = '(' + d_name + ')' + p_name
-                if key not in data:
-                    data[key] = []
+                if key not in dict_obj:
+                    dict_obj[key] = []
                     columns.append(key)
 
                 total_cost = 0
 
-                for c_name in code_names:
+                for code in codes:
                     if n == 0:
-                        data['科目'].append(c_name)
-                    codes = codes_df[codes_df['ccode_name'] == c_name]
-                    vouch_df = all_accvouch_df.loc[all_accvouch_df['cperson_id'] == person['cPersonCode']]
-                    vouch_df = vouch_df[vouch_df['ccode'].isin(codes['ccode']) == True]
-                    cost = self.sum_mc(vouch_df)
+                        dict_obj['科目'].append(code_names_dict[code])
+                        dict_obj['科目编码'].append(code)
+                    vouch_df = all_vouch_df.query("cdept_id == '%s' and cperson_id == '%s'" % (dept['cDepCode'], person['cPersonCode']))
+                    cost = self.sum_cost(vouch_df, [code])
                     total_cost += cost
-                    data[key].append(float('%.2f' % cost))
+                    dict_obj[key].append(float('%.2f' % cost))
                 # 合计
                 if n == 0:
-                    data['科目'].append('合计')
-                data[key].append(float('%.2f' % total_cost))
+                    dict_obj['科目'].append('合计')
+                    dict_obj['科目编码'].append('')
+                dict_obj[key].append(float('%.2f' % total_cost))
                 n += 1
 
         drop_index = []
         total2_arr = []
         i = 0
-        for c in data['科目']:
+        for c in dict_obj['科目']:
             i_total = 0
             for col in columns:
 
-                if col != '科目':
-                    i_total += data[col][i]
+                if col != '科目' and col != '科目编码':
+                    i_total += dict_obj[col][i]
             if i_total == 0:
                 drop_index.append(i)
             total2_arr.append(round(i_total, 2))
@@ -367,58 +336,20 @@ class PersonCostHandler(BaseHandler):
             i += 1
         #
         columns.append('合计')
-        data['合计'] = total2_arr
+        dict_obj['合计'] = total2_arr
 
-        data = DataFrame(data, columns=columns)
-        data.drop(data.index[drop_index], inplace=True)
+        data = DataFrame(dict_obj, columns=columns)
+        # data.drop(data.index[drop_index], inplace=True)
 
         self.render("person_cost.html",
                     listData=data,
-                    department_df=department_df,
+                    # department_df=department_df,
                     all_department_df=all_department_df,
                     _depCode=_depCode,
                     _start_date=_start_date,
                     _end_date=_end_date,
-                    _all_person_df=all_person_df,
                     _personCode=_personCode
                     )
-
-    @staticmethod
-    def get_codes_df(year):
-
-        class_lst = ['损益']
-        year = year.strftime("%Y") if isinstance(year, datetime.datetime) else year
-        sql = "SELECT c.ccode_name,c.ccode,c.igrade from fin_code c where c.iyear='%s' and c.bperson=1 and c.cclass in ('%s')" % (
-            year, "','".join(class_lst))
-        # sql += " AND (c.ccode not LIKE '1221%%' and c.ccode not LIKE '2241%%')"
-
-        return pd.read_sql_query(sql, db_local.conn)
-
-        # 找出两个时间内的数据
-
-    @staticmethod
-    def get_acc_vouch(_start_date, _end_date):
-        _startDate = _start_date.strftime("%Y-%m-%d") if isinstance(_start_date, datetime.datetime) else _start_date
-        _endDate = _end_date.strftime("%Y-%m-%d") if isinstance(_end_date, datetime.datetime) else _end_date
-
-        main_sql = "SELECT ga.ccode,ga.cperson_id,sum(ga.mc) as total_mc,sum(ga.md) as total_md"
-        main_sql += " FROM fin_gl_accvouch ga"
-        main_sql += " WHERE (ga.dbill_date between '%s' and '%s')" % (_startDate, _endDate)
-        main_sql += " GROUP by ga.ccode,ga.cperson_id"
-
-        return pd.read_sql_query(main_sql, db_local.conn)
-
-    @staticmethod
-    def get_acc_vouch_sql(_start_date, _end_date):
-        _startDate = _start_date.strftime("%Y-%m-%d") if isinstance(_start_date, datetime.datetime) else _start_date
-        _endDate = _end_date.strftime("%Y-%m-%d") if isinstance(_end_date, datetime.datetime) else _end_date
-
-        main_sql = "SELECT ga.ccode,ga.ccode_equal,ga.cperson_id,sum(ga.mc) as total_mc,sum(ga.md) as total_md"
-        main_sql += " FROM fin_gl_accvouch ga"
-        main_sql += " WHERE (ga.dbill_date between '%s' and '%s')" % (_startDate, _endDate)
-        main_sql += " GROUP by ga.ccode,ga.cperson_id,ga.ccode_equal"
-
-        return main_sql
 
     @staticmethod
     def get_person_df(cDepCode, cPersonCode=''):
@@ -426,19 +357,27 @@ class PersonCostHandler(BaseHandler):
         if cDepCode != '':
             sql += " and p.cDepCode='%s'" % (cDepCode)
         if cPersonCode != '':
-            sql += " and p.cPersonCode='%s'" %(cPersonCode)
+            sql += " and p.cPersonCode='%s'" % (cPersonCode)
         return pd.read_sql_query(sql, db_local.conn)
 
     @staticmethod
-    def sum_mc(df):
-        data = df.groupby(by=['ccode']).agg({'total_mc': sum})
+    def sum_cost(df, codes):
+        new_df = df.loc[df['ccode'].isin(codes)]
         y = 0
-        for i, row in data.iterrows():
-            y += row['total_mc']
+        for i, r in new_df.iterrows():
+            y += r['total_mc']
         return y
 
 
 class AccountsPayableHandler(BaseHandler):
+    def get_list(self, result, _start_date, _end_date, main_sql=''):
+
+        self.render("accounts_payable.html",
+                    listData=result,
+                    _start_date=_start_date,
+                    _end_date=_end_date,
+                    main_sql=main_sql)
+
     def get(self):
 
         # 当前时间
@@ -464,6 +403,7 @@ class AccountsPayableHandler(BaseHandler):
 
         _d_endDate = datetime.datetime.strptime(_end_date, '%Y-%m')
         _d_endDate = (_d_endDate + relativedelta(months=1))
+        _limit_date = _d_endDate
 
         # 提取出所需要统计的年份，因为可能跨年份统计
         _yearsList = []
@@ -472,37 +412,111 @@ class AccountsPayableHandler(BaseHandler):
             if year not in _yearsList:
                 _yearsList.append(year)
 
-        from tables.Code import Code
-        from tables.Vendor import Vendor
-        from tables.GL_accvouch import GL_accvouch
-
-        # 合并字段
-        dict_fields = dict_merge(GL_accvouch, Code)
-        dict_fields = dict_merge(dict_fields, Vendor)
-
-        # #拼接SQL
-        fields_sql = get_fields_sql(
-            [{"ga.dbill_date": '制单日期'}, 'ga.ccode', 'c.ccode_name', 'ga.cdigest',
-             'ga.md', 'ga.mc', 'v.cVenCode', 'v.cVenName'],
-            dict_fields)
         # main_sql = fields_sql
-        main_sql = "SELECT CONCAT(ga.csign,'-',ga.ino_id) as 凭证号, %s" % fields_sql
-        main_sql += " FROM fin_gl_accvouch ga "
-        main_sql += " JOIN fin_code c ON(c.ccode = ga.ccode and c.iyear in ('%s') and c.ccode_name='人民币') " % (
-            "','".join(_yearsList))
+        main_sql = "SELECT "
+        main_sql += "	ap.iyear as 年,"
+        main_sql += "	CONCAT( ap.csign, '-', (case when ap.ino_id<10 then CONCAT('000',ap.ino_id) when ap.ino_id<100 then CONCAT('00',ap.ino_id) when ap.ino_id<1000 then CONCAT('0',ap.ino_id) else ap.ino_id end) ) AS 凭证号,"
+        main_sql += "	ap.cVenCode AS 供应商编码,"
+        main_sql += "	ap.cVenName AS 供应商名称,"
+        main_sql += "	ap.ccode_name AS 科目名称,"
+        main_sql += "	ap.cdigest AS 摘要,"
+        main_sql += "	ap.md AS 借方金额,"
+        main_sql += "	ap.ccode AS 科目编码,"
+        main_sql += "	ap.mc AS 贷方金额,"
+        main_sql += "	ap.dbill_date AS 制单日期,"
+        main_sql += "	ap.cVenPUOMProtocol as 收付款协议编码,"
+        main_sql += "	ap.cVenPUOMProtocolName as 收付款协议"
+        main_sql += " FROM fin_accounts_payable ap "
 
-        main_sql += " JOIN fin_vendor v ON(v.cVenCode = ga.csup_id) "
-        # main_sql+= " JOIN SettleStyle ss ON(ss.cSSCode = ga.csettle)"
-        main_sql += " WHERE (ga.dbill_date between '%s' and '%s')" % (
-        _d_startDate.strftime(_s_date_format), _d_endDate.strftime(_s_date_format))
-        main_sql += " ORDER BY ga.dbill_date"
-
-
-
+        main_sql += " WHERE (ap.dbill_date >= '%s' and ap.dbill_date <'%s')" % (
+            _d_startDate.strftime(_s_date_format), _d_endDate.strftime(_s_date_format))
+        main_sql += " ORDER BY ap.dbill_date"
+        # self.write(main_sql)
+        # self.flush()
         # #从数据库里取数据
         result = pd.read_sql_query(main_sql, db_local.conn)
 
+        _protocols = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + '/data/vendor_protocols.csv')
+        vendor_protocols = {}
+        for row in _protocols.iterrows():
+            vendor_protocols[row[1]['供应商']] = row[1]['收付款协议']
+
+            # 取得所有付款协议
+            agreement_df = pd.read_sql_query("select * from fin_agreement", db_local.conn)
+            agreement_protocols = {}
+            for row in agreement_df.iterrows():
+                agreement_protocols[row[1]['cCode']] = row[1]['cName']
+
+            def get_protocol_name(inp):
+                _protocol_name, _protocol_code, vendor_name = inp
+
+                # 假设所有订单都有收付款协议编码
+                if _protocol_code != '':
+
+                    # 先去收付款协议里取
+                    if _protocol_code in agreement_protocols:
+                        _protocol_name = agreement_protocols[_protocol_code]
+                    # 如果在收付款协议里取不到，则去cvs所提供的资料里找
+                    elif vendor_name in vendor_protocols:
+                        _protocol_name = vendor_protocols[vendor_name]
+                    # 再找不到就返回空
+                    else:
+                        _protocol_name = ''
+                elif vendor_name in vendor_protocols:
+                    _protocol_name = vendor_protocols[vendor_name]
+                return _protocol_name
+
+        result['收付款协议'] = result[['收付款协议', '收付款协议编码', '供应商名称']].apply(get_protocol_name, axis=1)
+
+        #
+        pay_list = {
+            '预付货款': 0,
+            '货到付款': 0,
+            '月结30天': 30,
+            '月结60天': 60,
+            '月结15天': 15,
+            '月结45天': 45,
+            '现金': 0
+        }
+
+        # 当前时间
+        _d_now_date = datetime.datetime.now()
+
+        # months ago
+        _months_before_date = _limit_date + relativedelta(months=-1)
+
+        def get_pay_date2(inp):
+            inv_date, pay_mode = inp
+
+            d_delta = pay_list[pay_mode] if pay_mode in pay_list else 0
+            if inv_date != '':
+                _d_start_date = datetime.datetime.strptime(inv_date, '%Y-%m-%d') if isinstance(inv_date, str) else inv_date
+
+                _delta = int(d_delta / 30) + 1
+
+                finally_date = _d_start_date + relativedelta(months=_delta)
+                if int(_months_before_date.strftime('%Y%m')) >= int(finally_date.strftime('%Y%m')):
+                    return _months_before_date.strftime("%Y-%m-15")
+                return finally_date.strftime("%Y-%m-15")
+                # return "%s-%s" % (_d_start_date.strftime("%Y-%m"),
+                #                   calendar.mdays[_d_start_date.month]) if d_delta == 0 else finally_date.strftime(
+                #     "%Y-%m-15")
+
+            # _date = (_d_now_date + relativedelta(months=1))
+            return (_d_now_date + relativedelta(months=1)).strftime("%Y-%m-15")
+            # return "%s-%s" % (_d_now_date.strftime("%Y-%m"), calendar.mdays[_d_now_date.month]) if d_delta == 0 else (
+            #             _d_now_date + relativedelta(months=1)).strftime("%Y-%m-15")
+
+        # calculate the payday
+        result['预计日期'] = result[['制单日期', '收付款协议']].apply(get_pay_date2, axis=1)
+
         result['制单日期'] = result['制单日期'].apply(lambda x: x.strftime('%Y-%m-%d'))
+
+        # 可切换为直接列表展示
+        is_list = False
+        if is_list:
+            return self.get_list(result, _start_date, _end_date)
+
         # 取得供应商编码
         vendor_codes = result['供应商编码'].drop_duplicates()
 
@@ -535,37 +549,32 @@ class AccountsPayableHandler(BaseHandler):
                             else:
                                 data[col].append('')
                     if total_balance > 0:
-                        data['余额'].append(round(total_balance, 2))
                         data['方向'].append('贷')
                     elif total_balance == 0:
-                        data['余额'].append(round(total_balance, 2))
                         data['方向'].append('平')
                     else:
-                        data['余额'].append(round(abs(total_balance), 2))
                         data['方向'].append('借')
-                    # data['余额'].append(round(total_balance, 2))
+                    data['余额'].append(round(abs(total_balance), 2))
                     data['-'].append('')  # first
 
                 # normal row
-                for col in result.columns:
-                    if col in data:
-                        data[col].append(row[col])
+
                 lend_total = lend_total + row['贷方金额']
                 borrow_total = borrow_total + row['借方金额']
                 total_balance = total_balance + row['贷方金额'] - row['借方金额']
 
+                for col in result.columns:
+                    if col in data:
+                        data[col].append(row[col])
                 if total_balance > 0:
-                    data['余额'].append(round(total_balance, 2))
                     data['方向'].append('贷')
                 elif total_balance == 0:
-                    data['余额'].append(round(total_balance, 2))
                     data['方向'].append('平')
                 else:
-                    data['余额'].append(round(abs(total_balance), 2))
                     data['方向'].append('借')
-
+                data['余额'].append(round(abs(total_balance), 2))
                 data['-'].append(self.get_code_name(self.get_parent_code(row['科目编码'], codes_data)) + '-' + row['科目名称'])
-                #         print(lend_total)
+
                 # total row
                 if i == _len - 1:
                     for col in result.columns:
@@ -578,7 +587,7 @@ class AccountsPayableHandler(BaseHandler):
                             elif col == '借方金额':
                                 data[col].append(str(round(borrow_total, 2)))
                             else:
-                                data[col].append(' ')
+                                data[col].append(row[col])
                         data[col].append('')
 
                     if total_balance > 0:
@@ -621,10 +630,7 @@ class AccountsPayableHandler(BaseHandler):
     @staticmethod
     def get_balance(venCode, limitDate):
         # 贷方金额 为 已收到票据但未付款
-        sql = "select distinct ga.i_id, v.cVenName as 供应商名称,ga.mc AS 贷方金额, ga.md as 借方金额 from fin_gl_accvouch ga \
-        LEFT JOIN fin_vendor v ON(v.cVenCode = ga.csup_id) \
-        LEFT JOIN fin_code c ON(c.ccode = ga.ccode) \
-        where ga.csup_id='%s' and c.ccode_name='人民币' and ga.dbill_date < '%s' " % (venCode, limitDate)
+        sql = "select distinct ap.cVenName as 供应商名称,ap.mc AS 贷方金额, ap.md as 借方金额 from fin_accounts_payable ap where ap.cVenCode='%s' and ap.ccode_name='人民币' and ap.dbill_date < '%s' " % (venCode, limitDate)
         res = pd.read_sql_query(sql, db_local.conn)
         res = res.groupby(by=['供应商名称']).agg({'借方金额': sum, '贷方金额': sum})
         total_amount = 0
@@ -687,7 +693,7 @@ class TemporaryEstimationHandler(BaseHandler):
         sql += " ,iProcessFee AS 加工费单价 "
         sql += " ,iProcessFee as 加工费 "
         sql += " ,cAgrName AS 收付款协议 "
-        sql += " from fin_temporary_estimation where `dDate`<'%s'  ORDER BY `dDate` DESC " %(_limit_date.strftime('%Y-%m-01'))
+        sql += " from fin_temporary_estimation where `dDate`<'%s'  ORDER BY `dDate` DESC " % (_limit_date.strftime('%Y-%m-01'))
 
         result = pd.read_sql_query(sql, db_local.conn)
         # print(result.head(5))
@@ -842,7 +848,7 @@ class TemporaryEstimationHandler(BaseHandler):
                 # 委外的订单
                 if str(row[1]['订单号']).find('WO') > -1:
                     tax_rate = int(row[1]['税率']) if row[1]['税率'] != '' else 0
-                    temporary_cost = row[1]['加工费']*(tax_rate+100)/100
+                    temporary_cost = row[1]['加工费'] * (tax_rate + 100) / 100
                     wo_total += temporary_cost
                     all_total_no_tax += row[1]['加工费'] * 1
                 else:
@@ -1222,7 +1228,7 @@ class CapitalizedCostByClassHandler(BaseHandler):
             if len(_classes) == 1:
                 for row in _classes.iterrows():
                     return row[1]['一级类别'] if isinstance(row[1]['二级类别'], float) and math.isnan(row[1]['二级类别']) else \
-                    row[1]['二级类别']
+                        row[1]['二级类别']
             return name
 
         data['存货分类'] = data[['存货编码']].apply(get_class_name, axis=1)
@@ -1365,7 +1371,8 @@ class IceRentCostHandler(BaseHandler):
             sql += " and RENT_TIME >= '%d' and RENT_TIME <= '%d'" % (time_stamp_start * 1000, time_stamp_end * 1000)
 
         if keywords != '':
-            sql += " and (AGENT_CO like '%" + keywords + "%' or BODY_NUM like '%" + keywords + "%' or CONTRACT_NO like '%" + keywords + "%' )"
+            # AGENT_CO like '%" + keywords + "%' or
+            sql += " and ( BODY_NUM like '%%" + keywords + "%%' or CONTRACT_NO like '%%" + keywords + "%%' )"
 
         _sign_date = self.get_argument("signDate", '')
         if _sign_date != '':
@@ -1396,9 +1403,21 @@ class IceRentCostHandler(BaseHandler):
         data = pd.read_sql_query(sql, db_local.conn)
         data.fillna('', inplace=True)
 
+        # 获取invoiceFinalDate
+        def get_date(inp):
+            x, y = inp
+            if x != '' and x > 0:
+                _d = datetime.datetime.fromtimestamp(x / 1000)
+                _d = (_d + relativedelta(months=int(y)))
+                return _d.strftime('%Y/%m/%d')
+            return x
+
+        # data['END_INVOICE_TIME'] = data[['INVOICE_TIME01', 'LEASE_TERM']].apply(get_date, axis=1)
+        # data['END_RECEIVE_TIME'] = data[['PAY_TIME01', 'LEASE_TERM']].apply(get_date, axis=1)
+
         def get_date_by_micotimestamp(x):
             x = 0 if x == '' else x
-            timestamp = 0 if x is None else x/1000
+            timestamp = 0 if x is None else x / 1000
             timestamp = 0 if math.isnan(float(timestamp)) else timestamp
             _d = datetime.datetime.fromtimestamp(timestamp)
             return time.strftime("%Y/%m/%d", time.localtime(int(time.mktime(_d.timetuple())))) if timestamp > 100 else ''
@@ -1429,7 +1448,7 @@ class IceRentCostHandler(BaseHandler):
         sort_columns = ['SIGNING_DATE', 'AGENT_CO', 'CUSTOMER', 'CONTRACT_NO', 'CUSTOM_CONTRACT_NO', 'DEVICE_MODEL', 'BODY_NUM',
                         'RENT_TIME', 'LEASE_TERM', 'PERIOD_NUM', 'DEVICE_LEASE_MONEY', 'INVOICE_MONEY_TOTAL']
         for i in range(1, 37):
-            n = "0"+str(i) if i < 10 else str(i)
+            n = "0" + str(i) if i < 10 else str(i)
             rename_columns['RECEIVE_MONEY' + n] = "收款金额" + n
             rename_columns['PAY_TIME' + n] = "收款时间" + n
             rename_columns['INVOICE_MONEY' + n] = "开票金额" + n
@@ -1472,7 +1491,8 @@ class IceRentCostHandler(BaseHandler):
                     listData=data,
                     _start_date=_start_date,
                     _end_date=_end_date,
-                    _rent_date=_rent_date
+                    _rent_date=_rent_date,
+                    _keywords=keywords
                     )
 
 

@@ -31,22 +31,6 @@
                 </div>
 
             </div>
-            <!--<div class="col-sm-2">-->
-                <!--<div class="input-group">-->
-                    <!--<span class="input-group-addon">部门</span>-->
-                    <!--<select name="cPersonCode" title="" class="form-control">-->
-                        <!--<option value="">全部</option>-->
-                        <!--{% for i,row in _all_person_df.iterrows() %}-->
-                        <!--{% if row['cPersonCode']== _personCode%}-->
-                        <!--<option value="{{ row['cPersonCode']}}" selected="selected">{{row['cPersonName']}}</option>-->
-                        <!--{% else %}-->
-                        <!--<option value="{{ row['cPersonCode']}}">{{row['cPersonName']}}</option>-->
-                        <!--{% end%}-->
-                        <!--{% end %}-->
-                    <!--</select>-->
-                <!--</div>-->
-
-            <!--</div>-->
             <div class="col-sm-3">
                 <div id="startDate" style="width: 96%;" class="input-group date col-md-5" data-link-field="dtp_input1"
                      data-link-format="yyyy-mm">
@@ -109,10 +93,12 @@
         var peopleArr = [];
 
     var option = getOption(jsonData.Rows,function (k,obj) {
-        if(k=='科目'){
+         if(['科目','科目编码'].indexOf(k)>-1){
             obj['frozen'] = true;
+            obj['align'] = ['left'];
             frozenColumns.push(obj);
         }
+
          if(['科目','合计'].indexOf(k)<0){
             peopleArr.push(obj);
         }

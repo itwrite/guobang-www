@@ -61,19 +61,20 @@
             </div>
             <div class="col-sm-3" style="width: 280px;">
                <div style="width: 96%;" class="input-group date col-md-5">
-                    <input class="form-control" size="16" type="text" name="keywords" value="" placeholder="合同号/机身号" >
+                    <input class="form-control" size="16" type="text" name="keywords" value="{{_keywords}}" placeholder="合同号/机身号" >
                 </div>
             </div>
             <div class="col-sm-2">
                 <button type="submit" class="btn btn-primary btn-mini">搜索</button>
             </div>
+           <div class="my-buttons pull-right">
+                <button type="button" class="download btn btn-info" disabled>下载</button>
+            </div>
         </div>
 
     </form>
 
-      <div class="my-buttons">
-        <button type="button" class="download btn btn-info" disabled>下载</button>
-    </div>
+
     <div id="grid">
 
     </div>
@@ -86,12 +87,13 @@
                 columns: [],
                 width: '100%',
                 pkName: 'id',
-                pageSizeOptions: [5, 10, 15, 20],
+                pageSizeOptions: [20, 30, 40, 50],
+        pageSize:30,
                 height: '100%',
                 usePager:false,
                 data:jsonData,
         fixedCellHeight: false,
-        rownumbersColWidth:28,
+           rownumbersColWidth:36,
         rownumbers:true,
         onAfterShowData:function () {
             $(".download").removeAttr('disabled');

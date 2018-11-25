@@ -74,8 +74,9 @@
             };
     for(var k in jsonData.Rows[0]){
         var obj = {display: k, name:k , width: 150,isSort:false}
-        if(k=='科目'){
+        if(['科目','科目编码'].indexOf(k)>-1){
             obj['frozen'] = true;
+            obj['align'] = ['left']
         }
         option.columns.push(obj)
     }
