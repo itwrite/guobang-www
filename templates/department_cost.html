@@ -17,9 +17,9 @@
                     <select name="cDepCode" title="" class="form-control">
                         {% for i,row in all_department_df.iterrows() %}
                         {% if row['cDepCode']== _depCode%}
-                        <option value="{{ row['cDepCode']}}" selected="selected">{{row['cDepName']}}</option>
+                        <option value="{{ row['cDepCode']}}" selected="selected">{{row['cDepFullName']}}</option>
                         {% else %}
-                        <option value="{{ row['cDepCode']}}">{{row['cDepName']}}</option>
+                        <option value="{{ row['cDepCode']}}">{{row['cDepFullName']}}</option>
                         {% end%}
                         {% end %}
                     </select>

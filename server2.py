@@ -141,22 +141,24 @@ class DepartmentCostHandler(BaseHandler):
         _d_end_date = datetime.datetime.strptime(_end_date, '%Y-%m')
         _d_end_date = (_d_end_date + relativedelta(months=1))
 
-        sql = " SELECT DATE_FORMAT(ga.dbill_date,'%%Y-%%m') as iYPeriod,d.cDepName,d.cDepCode,p.cPersonName, ga.cperson_id,c.ccode, c.ccode_name,round(sum(ga.mc),4) as total_mc,round(sum(ga.md),4) as total_md"
-        sql += " FROM fin_gl_accvouch ga"
-        sql += " JOIN fin_department d on(ga.cdept_id = d.cDepCode)"
-        sql += " JOIN fin_code c on ga.ccode = c.ccode"
-        sql += " LEFT JOIN fin_person p on p.cPersonCode = ga.cperson_id"
-        sql += " WHERE (ga.dbill_date >= '%s' and ga.dbill_date < '%s') and ga.cdept_id = '1' and c.cclass in ('损益') and c.iyear = '%s' " % (
-            _d_start_date.strftime('%Y-%m-%d'), _d_end_date.strftime('%Y-%m-%d'), _d_start_date.strftime('%Y'))
-        sql += " GROUP by DATE_FORMAT(ga.dbill_date,'%%Y-%%m'),d.cDepName,d.cDepCode,p.cPersonName, ga.cperson_id,c.ccode, c.ccode_name"
+        sql = " select temp.iYPeriod,temp.ccode,temp.ccode_name,temp.cDepCode,temp.cDepName,sum(temp.total_md) as total_md, sum(temp.total_mc) as total_mc from ( "
+        sql += " SELECT DATE_FORMAT(ga.dbill_date,'%%Y-%%m') as iYPeriod,d.cDepName,d.cDepCode,p.cPersonName, ga.cperson_id,c.ccode, c.ccode_name,round(sum(ga.mc),4) as total_mc,round(sum(ga.md),4) as total_md "
+        sql += " FROM fin_gl_accvouch ga "
+        sql += " JOIN fin_department d on(ga.cdept_id = d.cDepCode) "
+        sql += " JOIN fin_code c on ga.ccode = c.ccode and c.bdept=1 "
+        sql += " LEFT JOIN fin_person p on p.cPersonCode = ga.cperson_id "
+        sql += " WHERE (ga.dbill_date >= '%s' and ga.dbill_date < '%s') and ga.cdept_id='%s' and c.iyear = '%s' "% (
+            _d_start_date.strftime('%Y-%m-%d'), _d_end_date.strftime('%Y-%m-%d'),_depCode, _d_start_date.strftime('%Y'))
+        sql += " GROUP BY DATE_FORMAT(ga.dbill_date,'%%Y-%%m'),d.cDepName,d.cDepCode,p.cPersonName, ga.cperson_id,c.ccode, c.ccode_name ORDER BY c.ccode_name) temp "
+        sql += " group by temp.iYPeriod,temp.ccode,temp.ccode_name,temp.cDepName order by temp.cDepName,temp.ccode; "
 
+        # self.write(sql)
+        # self.flush()
         all_vouch_df = pd.read_sql_query(sql, db_local.conn)
 
-        code_names_dict = {}
+        codes_dict = {}
         for i, row in all_vouch_df.iterrows():
-            code_names_dict[row['ccode']] = row['ccode_name']
-
-        codes = all_vouch_df['ccode'].drop_duplicates()
+            codes_dict[row['ccode_name'] + "___" + row['ccode']] = {"ccode": row['ccode'], "ccode_name": row['ccode_name'], "cDepCode": row['cDepCode'], "cDepName": row['cDepName']}
 
         # 初始化
         dict_obj = {'科目': [], '科目编码': []}
@@ -164,17 +166,14 @@ class DepartmentCostHandler(BaseHandler):
         n = 0
 
         # 获取所有部门
-        sql = " select * from fin_department"
+        sql = " select * from fin_department where bDepEnd=1"
         all_department_df = pd.read_sql_query(sql, db_local.conn)
 
         # 找出某个部门
         department_df = all_department_df[all_department_df['cDepCode'] == _depCode]
-        # 其实只获取一个部门
-        for i, row in department_df.iterrows():
 
-            # ==================
-            # ==================
-            dept_name = row['cDepName']
+        for i, dept in department_df.iterrows():
+            dept_name = dept['cDepName']
             for j in range(0, get_month_delta(_d_start_date, _d_end_date)):
 
                 _date = (_d_start_date + relativedelta(months=j))
@@ -186,11 +185,13 @@ class DepartmentCostHandler(BaseHandler):
                     columns.append(column_name)
 
                 total_cost = 0
-                for code in codes:
+                for k in codes_dict:
+
+                    obj = codes_dict[k]
                     if n == 0:
-                        dict_obj['科目'].append(code_names_dict[code])
-                        dict_obj['科目编码'].append(code)
-                    cost = self.sum_cost(all_vouch_df, row['cDepCode'], [code], _date)
+                        dict_obj['科目'].append(obj['ccode_name'])
+                        dict_obj['科目编码'].append(obj['ccode'])
+                    cost = self.sum_cost(all_vouch_df, obj['cDepCode'], obj['ccode'], obj['ccode_name'], _date)
                     dict_obj[column_name].append(round(cost, 2))
                     total_cost += cost
                 # 合计
@@ -230,9 +231,8 @@ class DepartmentCostHandler(BaseHandler):
                     )
 
     @staticmethod
-    def sum_cost(df, dep_code, codes_list, _date):
-        new_df = df.query("cDepCode=='%s' and iYPeriod =='%s' " % (dep_code, _date.strftime('%Y-%m')))
-        new_df = new_df.loc[new_df['ccode'].isin(codes_list)]
+    def sum_cost(df, dep_code, code, code_name, _date):
+        new_df = df.query("cDepCode=='%s' and iYPeriod =='%s' and ccode=='%s' and ccode_name=='%s'" % (dep_code, _date.strftime('%Y-%m'), code, code_name))
         y = 0
         for i, r in new_df.iterrows():
             # print(row)
